@@ -3287,11 +3287,11 @@ int cycle_through_custom_resources(int current, std::map <int, std::vector<SDL_S
     // The map is empty only the default value is valid
     if(Map.size() == 0)
         return 0;
-    // We have selected the default use the first (or last) custom
+    // The current value is the default, use the first (or last) custom
     if(current == 0)
         return forward ? Map.begin() -> first : (--Map.end())->first;
-    // Once we found the current on return the next
-    bool returnNext = 0;
+    // Once we found the current one return the next
+    bool returnNext = false;
     if(forward){
         for(auto it = Map.begin(); it != Map.end(); ++it){
             if(returnNext)
@@ -3308,8 +3308,8 @@ int cycle_through_custom_resources(int current, std::map <int, std::vector<SDL_S
               returnNext = true;
         }
     }
-    // We have reached the end because the last one was the current one or that spritesheet
-    // no longer exist just go back to the default one
+    // We have reached the end because the last one was the current one or that custom resource
+    // no longer exist just go back to the default resource
     return 0;
 }
 
