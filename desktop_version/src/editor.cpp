@@ -31,2984 +31,2984 @@
 
 edlevelclass::edlevelclass()
 {
-    tileset=0;
-    tilecol=0;
-    roomname="";
-    warpdir=0;
-    platx1=0;
-    platy1=0;
-    platx2=320;
-    platy2=240;
-    platv=4;
-    enemyv=4;
-    enemyx1=0;
-    enemyy1=0;
-    enemyx2=320;
-    enemyy2=240;
-    enemytype=0;
-    directmode=0;
-    tower=0;
-    tower_row=0;
+tileset=0;
+tilecol=0;
+roomname="";
+warpdir=0;
+platx1=0;
+platy1=0;
+platx2=320;
+platy2=240;
+platv=4;
+enemyv=4;
+enemyx1=0;
+enemyy1=0;
+enemyx2=320;
+enemyy2=240;
+enemytype=0;
+directmode=0;
+tower=0;
+tower_row=0;
 }
 
 edaltstate::edaltstate()
 {
-    reset();
+reset();
 }
 
 void edaltstate::reset()
 {
-    x = -1;
-    y = -1;
-    state = -1;
-    tiles.resize(40 * 30);
+x = -1;
+y = -1;
+state = -1;
+tiles.resize(40 * 30);
 }
 
 edtower::edtower() {
-    reset();
+reset();
 }
 
 void edtower::reset(void) {
-    size = 40;
-    scroll = 0;
-    tiles.resize(40 * size);
-    int x, y;
-    for (x = 0; x < 40; x++)
-        for (y = 0; y < size; y++)
-            tiles[x + y*40] = 0;
+size = 40;
+scroll = 0;
+tiles.resize(40 * size);
+int x, y;
+for (x = 0; x < 40; x++)
+for (y = 0; y < size; y++)
+	tiles[x + y*40] = 0;
 }
 
 editorclass::editorclass()
 {
-    //We create a blank map
-    for (int j = 0; j < 30 * maxwidth; j++)
-    {
-        for (int i = 0; i < 40 * maxheight; i++)
-        {
-            contents.push_back(0);
-        }
-    }
+//We create a blank map
+for (int j = 0; j < 30 * maxwidth; j++)
+{
+for (int i = 0; i < 40 * maxheight; i++)
+{
+	contents.push_back(0);
+}
+}
 
-    for (int j = 0; j < 30; j++)
-    {
-        for (int i = 0; i < 40; i++)
-        {
-            swapmap.push_back(0);
-        }
-    }
+for (int j = 0; j < 30; j++)
+{
+for (int i = 0; i < 40; i++)
+{
+	swapmap.push_back(0);
+}
+}
 
-    for (int i = 0; i < 30 * maxheight; i++)
-    {
-        vmult.push_back(int(i * 40 * maxwidth));
-    }
+for (int i = 0; i < 30 * maxheight; i++)
+{
+vmult.push_back(int(i * 40 * maxwidth));
+}
 
-    altstates.resize(500);
-    towers.resize(400);
-    level.resize(maxwidth * maxheight);
-    kludgewarpdir.resize(maxwidth * maxheight);
+altstates.resize(500);
+towers.resize(400);
+level.resize(maxwidth * maxheight);
+kludgewarpdir.resize(maxwidth * maxheight);
 
-    entspeed = 0;
+entspeed = 0;
 
-    reset();
+reset();
 }
 
 // comparison, not case sensitive.
 bool compare_nocase (std::string first, std::string second)
 {
-    unsigned int i=0;
-    while ( (i<first.length()) && (i<second.length()) )
-    {
-        if (tolower(first[i])<tolower(second[i]))
-            return true;
-        else if (tolower(first[i])>tolower(second[i]))
-            return false;
-        ++i;
-    }
-    if (first.length()<second.length())
-        return true;
-    else
-        return false;
+unsigned int i=0;
+while ( (i<first.length()) && (i<second.length()) )
+{
+if (tolower(first[i])<tolower(second[i]))
+	return true;
+else if (tolower(first[i])>tolower(second[i]))
+	return false;
+++i;
+}
+if (first.length()<second.length())
+return true;
+else
+return false;
 }
 
 static bool endsWith(const std::string& str, const std::string& suffix) {
-    return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
 }
 
 void editorclass::loadZips()
 {
-    directoryList = FILESYSTEM_getLevelDirFileNames();
-    bool needsReload = false;
+directoryList = FILESYSTEM_getLevelDirFileNames();
+bool needsReload = false;
 
-    for(size_t i = 0; i < directoryList.size(); i++)
-    {
-        if (endsWith(directoryList[i], ".zip")) {
-            PHYSFS_File* zip = PHYSFS_openRead(directoryList[i].c_str());
-            if (!PHYSFS_mountHandle(zip, directoryList[i].c_str(), "levels", 1)) {
-                printf("%s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-            } else {
-                needsReload = true;
-            }
-        }
-    }
+for(size_t i = 0; i < directoryList.size(); i++)
+{
+if (endsWith(directoryList[i], ".zip")) {
+	PHYSFS_File* zip = PHYSFS_openRead(directoryList[i].c_str());
+	if (!PHYSFS_mountHandle(zip, directoryList[i].c_str(), "levels", 1)) {
+		printf("%s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+	} else {
+		needsReload = true;
+	}
+}
+}
 
-    if (needsReload) directoryList = FILESYSTEM_getLevelDirFileNames();
+if (needsReload) directoryList = FILESYSTEM_getLevelDirFileNames();
 }
 
 void editorclass::getDirectoryData()
 {
 
-    ListOfMetaData.clear();
-    directoryList.clear();
+ListOfMetaData.clear();
+directoryList.clear();
 
-    loadZips();
+loadZips();
 
-    for(size_t i = 0; i < directoryList.size(); i++)
-    {
-        if (!endsWith(directoryList[i], ".zip")) {
-            LevelMetaData temp;
-            if (getLevelMetaData( directoryList[i], temp))
-            {
-                ListOfMetaData.push_back(temp);
-            }
-        }
-    }
+for(size_t i = 0; i < directoryList.size(); i++)
+{
+if (!endsWith(directoryList[i], ".zip")) {
+	LevelMetaData temp;
+	if (getLevelMetaData( directoryList[i], temp))
+	{
+		ListOfMetaData.push_back(temp);
+	}
+}
+}
 
-    for(size_t i = 0; i < ListOfMetaData.size(); i++)
-    {
-        for(size_t k = 0; k < ListOfMetaData.size(); k++)
-        {
-            if(compare_nocase(ListOfMetaData[i].title, ListOfMetaData[k].title ))
-            {
-                std::swap(ListOfMetaData[i] , ListOfMetaData[k]);
-                std::swap(directoryList[i], directoryList[k]);
-            }
-        }
-    }
+for(size_t i = 0; i < ListOfMetaData.size(); i++)
+{
+for(size_t k = 0; k < ListOfMetaData.size(); k++)
+{
+	if(compare_nocase(ListOfMetaData[i].title, ListOfMetaData[k].title ))
+	{
+		std::swap(ListOfMetaData[i] , ListOfMetaData[k]);
+		std::swap(directoryList[i], directoryList[k]);
+	}
+}
+}
 
 }
 bool editorclass::getLevelMetaData(std::string& _path, LevelMetaData& _data )
 {
-    unsigned char *uMem = NULL;
-    FILESYSTEM_loadFileToMemory(_path.c_str(), &uMem, NULL, true);
+unsigned char *uMem = NULL;
+FILESYSTEM_loadFileToMemory(_path.c_str(), &uMem, NULL, true);
 
-    if (uMem == NULL)
-    {
-        printf("Level %s not found :(\n", _path.c_str());
-        return false;
-    }
+if (uMem == NULL)
+{
+printf("Level %s not found :(\n", _path.c_str());
+return false;
+}
 
-    std::unique_ptr<char[], free_delete> mem((char*) uMem);
+std::unique_ptr<char[], free_delete> mem((char*) uMem);
 
-    try {
-        _data.creator = find_creator(mem.get());
-        _data.title = find_title(mem.get());
-        _data.Desc1 = find_desc1(mem.get());
-        _data.Desc2 = find_desc2(mem.get());
-        _data.Desc3 = find_desc3(mem.get());
-        _data.website = find_website(mem.get());
-        _data.filename = _path;
-        return true;
-    } catch (const std::out_of_range& ex) {
-        std::cout << "Couldn't load metadata for " << _path << "!" << std::endl;
-        return false;
-    }
+try {
+_data.creator = find_creator(mem.get());
+_data.title = find_title(mem.get());
+_data.Desc1 = find_desc1(mem.get());
+_data.Desc2 = find_desc2(mem.get());
+_data.Desc3 = find_desc3(mem.get());
+_data.website = find_website(mem.get());
+_data.filename = _path;
+return true;
+} catch (const std::out_of_range& ex) {
+std::cout << "Couldn't load metadata for " << _path << "!" << std::endl;
+return false;
+}
 }
 
 void editorclass::reset()
 {
-    version=2; //New smaller format change is 2
-    vceversion=VCEVERSION;
+version=2; //New smaller format change is 2
+vceversion=VCEVERSION;
 
-    mapwidth=5;
-    mapheight=5;
+mapwidth=5;
+mapheight=5;
 
-    EditorData::GetInstance().title="Untitled Level";
-    EditorData::GetInstance().creator="Unknown";
-    Desc1="";
-    Desc2="";
-    Desc3="";
-    website="";
+EditorData::GetInstance().title="Untitled Level";
+EditorData::GetInstance().creator="Unknown";
+Desc1="";
+Desc2="";
+Desc3="";
+website="";
 
-    roomnamehide=0;
-    zmod=false;
-    xmod=false;
-    cmod=false;
-    vmod=false;
-    spacemod=false;
-    spacemenu=0;
-    shiftmenu=false;
-    shiftkey=false;
-    saveandquit=false;
-    note="";
-    notedelay=0;
-    textentry=false;
-    deletekeyheld=false;
-    textmod = TEXT_NONE;
+roomnamehide=0;
+zmod=false;
+xmod=false;
+cmod=false;
+vmod=false;
+spacemod=false;
+spacemenu=0;
+shiftmenu=false;
+shiftkey=false;
+saveandquit=false;
+note="";
+notedelay=0;
+textentry=false;
+deletekeyheld=false;
+textmod = TEXT_NONE;
 
-    entcycle = 0;
-    lastentcycle = 0;
+entcycle = 0;
+lastentcycle = 0;
 
-    trialnamemod=false;
-    titlemod=false;
-    creatormod=false;
-    desc1mod=false;
-    desc2mod=false;
-    desc3mod=false;
-    websitemod=false;
-    settingsmod=false;
-    trialmod=false;
-    warpmod=false; //Two step process
-    warpent=-1;
+trialnamemod=false;
+titlemod=false;
+creatormod=false;
+desc1mod=false;
+desc2mod=false;
+desc3mod=false;
+websitemod=false;
+settingsmod=false;
+trialmod=false;
+warpmod=false; //Two step process
+warpent=-1;
 
-    boundarymod=0;
-    boundarytype=0;
-    boundx1=0;
-    boundx2=0;
-    boundy1=0;
-    boundy2=0;
+boundarymod=0;
+boundarytype=0;
+boundx1=0;
+boundx2=0;
+boundy1=0;
+boundy2=0;
 
-    drawmode=0;
-    dmtile=0;
-    dmtileeditor=0;
-    entcol=0;
+drawmode=0;
+dmtile=0;
+dmtileeditor=0;
+entcol=0;
 
-    tilex=0;
-    tiley=0;
-    levx=0;
-    levy=0;
-    levaltstate=0;
-    keydelay=0;
-    lclickdelay=0;
-    savekey=false;
-    loadkey=false;
-    updatetiles=true;
-    changeroom=true;
-    levmusic=0;
+tilex=0;
+tiley=0;
+levx=0;
+levy=0;
+levaltstate=0;
+keydelay=0;
+lclickdelay=0;
+savekey=false;
+loadkey=false;
+updatetiles=true;
+changeroom=true;
+levmusic=0;
 
-    trialstartpoint = false;
-    edtrial = 0;
+trialstartpoint = false;
+edtrial = 0;
 
-    entframe=0;
-    entframedelay=0;
+entframe=0;
+entframedelay=0;
 
-    numtrinkets=0;
-    numcoins=0;
-    numcrewmates=0;
-    edentity.clear();
-    levmusic=0;
+numtrinkets=0;
+numcoins=0;
+numcrewmates=0;
+edentity.clear();
+levmusic=0;
 
-    for (int j = 0; j < maxheight; j++)
-    {
-        for (int i = 0; i < maxwidth; i++)
-        {
-            level[i+(j*maxwidth)].tileset=0;
-            level[i+(j*maxwidth)].tilecol=(i+j)%32;
-            level[i+(j*maxwidth)].roomname="";
-            level[i+(j*maxwidth)].warpdir=0;
-            level[i+(j*maxwidth)].platx1=0;
-            level[i+(j*maxwidth)].platy1=0;
-            level[i+(j*maxwidth)].platx2=320;
-            level[i+(j*maxwidth)].platy2=240;
-            level[i+(j*maxwidth)].platv=4;
-            level[i+(j*maxwidth)].enemyv=4;
-            level[i+(j*maxwidth)].enemyx1=0;
-            level[i+(j*maxwidth)].enemyy1=0;
-            level[i+(j*maxwidth)].enemyx2=320;
-            level[i+(j*maxwidth)].enemyy2=240;
-            level[i+(j*maxwidth)].enemytype=0;
-            level[i+(j*maxwidth)].directmode=0;
-            level[i+(j*maxwidth)].tower=0;
-            level[i+(j*maxwidth)].tower_row=0;
-            kludgewarpdir[i+(j*maxwidth)]=0;
-        }
-    }
+for (int j = 0; j < maxheight; j++)
+{
+for (int i = 0; i < maxwidth; i++)
+{
+	level[i+(j*maxwidth)].tileset=0;
+	level[i+(j*maxwidth)].tilecol=(i+j)%32;
+	level[i+(j*maxwidth)].roomname="";
+	level[i+(j*maxwidth)].warpdir=0;
+	level[i+(j*maxwidth)].platx1=0;
+	level[i+(j*maxwidth)].platy1=0;
+	level[i+(j*maxwidth)].platx2=320;
+	level[i+(j*maxwidth)].platy2=240;
+	level[i+(j*maxwidth)].platv=4;
+	level[i+(j*maxwidth)].enemyv=4;
+	level[i+(j*maxwidth)].enemyx1=0;
+	level[i+(j*maxwidth)].enemyy1=0;
+	level[i+(j*maxwidth)].enemyx2=320;
+	level[i+(j*maxwidth)].enemyy2=240;
+	level[i+(j*maxwidth)].enemytype=0;
+	level[i+(j*maxwidth)].directmode=0;
+	level[i+(j*maxwidth)].tower=0;
+	level[i+(j*maxwidth)].tower_row=0;
+	kludgewarpdir[i+(j*maxwidth)]=0;
+}
+}
 
-    for (int j = 0; j < 30 * maxheight; j++)
-    {
-        for (int i = 0; i < 40 * maxwidth; i++)
-        {
-            contents[i+(j*40*maxwidth)]=0;
-        }
-    }
+for (int j = 0; j < 30 * maxheight; j++)
+{
+for (int i = 0; i < 40 * maxwidth; i++)
+{
+	contents[i+(j*40*maxwidth)]=0;
+}
+}
 
-    hooklist.clear();
+hooklist.clear();
 
-    sb.clear();
+sb.clear();
 
-    clearscriptbuffer();
-    sbx=0;
-    sby=0;
-    pagey=0;
-    scripteditmod=false;
-    sbscript="null";
-    scripthelppage=0;
-    scripthelppagedelay=0;
+clearscriptbuffer();
+sbx=0;
+sby=0;
+pagey=0;
+scripteditmod=false;
+sbscript="null";
+scripthelppage=0;
+scripthelppagedelay=0;
 
-    hookmenupage=0;
-    hookmenu=0;
-    script.customscript.clear();
+hookmenupage=0;
+hookmenu=0;
+script.customscript.clear();
 
-    grayenemieskludge = false;
+grayenemieskludge = false;
 
-    for (size_t i = 0; i < altstates.size(); i++)
-        altstates[i].reset();
-    for (size_t i = 0; i < towers.size(); i++)
-        towers[i].reset();
+for (size_t i = 0; i < altstates.size(); i++)
+altstates[i].reset();
+for (size_t i = 0; i < towers.size(); i++)
+towers[i].reset();
 
-    edentity.clear();
+edentity.clear();
 
-    returneditoralpha = 0;
+returneditoralpha = 0;
 
-    customtrials.clear();
-    dimensions.clear();
-    ghosts.clear();
+customtrials.clear();
+dimensions.clear();
+ghosts.clear();
 }
 
 void editorclass::gethooks()
 {
-    //Scan through the script and create a hooks list based on it
-    hooklist.clear();
-    std::string tstring;
-    std::string tstring2;
-    for(size_t i=0; i<script.customscript.size(); i++)
-    {
-        tstring=script.customscript[i];
-        if((int) tstring.length() - 1 >= 0) // FIXME: This is sketchy. -flibit
-        {
-            tstring=tstring[tstring.length()-1];
-        }
-        else
-        {
-            tstring="";
-        }
-        if(tstring==":")
-        {
-            tstring2="";
-            tstring=script.customscript[i];
-            for(size_t j=0; j<tstring.length()-1; j++)
-            {
-                tstring2+=tstring[j];
-            }
-            hooklist.push_back(tstring2);
-        }
-    }
+//Scan through the script and create a hooks list based on it
+hooklist.clear();
+std::string tstring;
+std::string tstring2;
+for(size_t i=0; i<script.customscript.size(); i++)
+{
+tstring=script.customscript[i];
+if((int) tstring.length() - 1 >= 0) // FIXME: This is sketchy. -flibit
+{
+	tstring=tstring[tstring.length()-1];
+}
+else
+{
+	tstring="";
+}
+if(tstring==":")
+{
+	tstring2="";
+	tstring=script.customscript[i];
+	for(size_t j=0; j<tstring.length()-1; j++)
+	{
+		tstring2+=tstring[j];
+	}
+	hooklist.push_back(tstring2);
+}
+}
 }
 
 void editorclass::loadhookineditor(std::string t)
 {
-    //Find hook t in the scriptclass, then load it into the editor
-    clearscriptbuffer();
+//Find hook t in the scriptclass, then load it into the editor
+clearscriptbuffer();
 
-    std::string tstring;
+std::string tstring;
 
-    bool removemode=false;
-    for(size_t i=0; i<script.customscript.size(); i++)
-    {
-        if(script.customscript[i]==t+":")
-        {
-            removemode=true;
-        }
-        else if(removemode)
-        {
-            tstring=script.customscript[i];
-            if(tstring != "")
-            {
-                tstring = tstring[tstring.length()-1];
-            }
-            if(tstring==":")
-            {
-                //this is a hook
-                removemode=false;
-            }
-            else
-            {
-                //load in this line
-                sb.push_back(script.customscript[i]);
-            }
-        }
-    }
-    if(sb.empty())
-    {
-        //Always have one line or we'll have problems
-        sb.resize(1);
-    }
+bool removemode=false;
+for(size_t i=0; i<script.customscript.size(); i++)
+{
+if(script.customscript[i]==t+":")
+{
+	removemode=true;
+}
+else if(removemode)
+{
+	tstring=script.customscript[i];
+	if(tstring != "")
+	{
+		tstring = tstring[tstring.length()-1];
+	}
+	if(tstring==":")
+	{
+		//this is a hook
+		removemode=false;
+	}
+	else
+	{
+		//load in this line
+		sb.push_back(script.customscript[i]);
+	}
+}
+}
+if(sb.empty())
+{
+//Always have one line or we'll have problems
+sb.resize(1);
+}
 }
 
 void editorclass::addhooktoscript(std::string t)
 {
-    //Adds hook+the scriptbuffer to the end of the scriptclass
-    removehookfromscript(t);
-    script.customscript.push_back(t+":");
-    for(size_t i=0; i<sb.size(); i++)
-    {
-        script.customscript.push_back(sb[i]);
-    }
+//Adds hook+the scriptbuffer to the end of the scriptclass
+removehookfromscript(t);
+script.customscript.push_back(t+":");
+for(size_t i=0; i<sb.size(); i++)
+{
+script.customscript.push_back(sb[i]);
+}
 }
 
 void editorclass::removehookfromscript(std::string t)
 {
-    //Find hook t in the scriptclass, then removes it (and any other code with it)
-    std::string tstring;
-    bool removemode=false;
-    for(size_t i=0; i<script.customscript.size(); i++)
-    {
-        if(script.customscript[i]==t+":")
-        {
-            removemode=true;
-            //Remove this line
-            for(size_t j=i; j<script.customscript.size()-1; j++)
-            {
-                script.customscript[j]=script.customscript[j+1];
-            }
-            script.customscript.pop_back();
+//Find hook t in the scriptclass, then removes it (and any other code with it)
+std::string tstring;
+bool removemode=false;
+for(size_t i=0; i<script.customscript.size(); i++)
+{
+if(script.customscript[i]==t+":")
+{
+	removemode=true;
+	//Remove this line
+	for(size_t j=i; j<script.customscript.size()-1; j++)
+	{
+		script.customscript[j]=script.customscript[j+1];
+	}
+	script.customscript.pop_back();
 
-            i--;
-        }
-        else if(removemode)
-        {
-            //If this line is not the start of a new hook, remove it!
-            tstring=script.customscript[i];
-            if (tstring.length() > 0) {
-                tstring=tstring[tstring.length()-1];
-            } else {
-                tstring="";
-            }
-            if(tstring==":")
-            {
-                //this is a hook
-                removemode=false;
-            }
-            else
-            {
-                //Remove this line
-                for(size_t j=i; j<script.customscript.size()-1; j++)
-                {
-                    script.customscript[j]=script.customscript[j+1];
-                }
-                script.customscript.pop_back();
+	i--;
+}
+else if(removemode)
+{
+	//If this line is not the start of a new hook, remove it!
+	tstring=script.customscript[i];
+	if (tstring.length() > 0) {
+		tstring=tstring[tstring.length()-1];
+	} else {
+		tstring="";
+	}
+	if(tstring==":")
+	{
+		//this is a hook
+		removemode=false;
+	}
+	else
+	{
+		//Remove this line
+		for(size_t j=i; j<script.customscript.size()-1; j++)
+		{
+			script.customscript[j]=script.customscript[j+1];
+		}
+		script.customscript.pop_back();
 
-                i--;
-            }
-        }
-    }
+		i--;
+	}
+}
+}
 }
 
 void editorclass::removehook(std::string t)
 {
-    //Check the hooklist for the hook t. If it's there, remove it from here and the script
-    removehookfromscript(t);
-    hooklist.erase(std::remove(hooklist.begin(), hooklist.end(), t), hooklist.end());
+//Check the hooklist for the hook t. If it's there, remove it from here and the script
+removehookfromscript(t);
+hooklist.erase(std::remove(hooklist.begin(), hooklist.end(), t), hooklist.end());
 }
 
 void editorclass::addhook(std::string t)
 {
-    //Add an empty function to the list in both editor and script
-    removehook(t);
-    hooklist.push_back(t);
-    addhooktoscript(t);
+//Add an empty function to the list in both editor and script
+removehook(t);
+hooklist.push_back(t);
+addhooktoscript(t);
 }
 
 bool editorclass::checkhook(std::string t)
 {
-    //returns true if hook t already is in the list
-    for(size_t i=0; i<hooklist.size(); i++)
-    {
-        if(hooklist[i]==t) return true;
-    }
-    return false;
+//returns true if hook t already is in the list
+for(size_t i=0; i<hooklist.size(); i++)
+{
+if(hooklist[i]==t) return true;
+}
+return false;
 }
 
 
 void editorclass::clearscriptbuffer()
 {
-    sb.clear();
+sb.clear();
 }
 
 void editorclass::removeline(int t)
 {
-    //Remove line t from the script
-    if((int)sb.size()>1)
-    {
-        sb.erase(sb.begin() + t);
-    }
+//Remove line t from the script
+if((int)sb.size()>1)
+{
+sb.erase(sb.begin() + t);
+}
 }
 
 void editorclass::insertline(int t)
 {
-    //insert a blank line into script at line t
-    sb.insert(sb.begin() + t, "");
+//insert a blank line into script at line t
+sb.insert(sb.begin() + t, "");
 }
 
 void editorclass::getlin(enum textmode mode, std::string prompt, std::string *ptr) {
-    ed.textmod = mode;
-    ed.textptr = ptr;
-    ed.textdesc = prompt;
-    key.enabletextentry();
-    if (ptr)
-        key.keybuffer = *ptr;
-    else {
-        key.keybuffer = "";
-        ed.textptr = &(key.keybuffer);
-    }
+ed.textmod = mode;
+ed.textptr = ptr;
+ed.textdesc = prompt;
+key.enabletextentry();
+if (ptr)
+key.keybuffer = *ptr;
+else {
+key.keybuffer = "";
+ed.textptr = &(key.keybuffer);
+}
 
-    ed.oldenttext = key.keybuffer;
+ed.oldenttext = key.keybuffer;
 }
 
 void editorclass::loadlevel( int rxi, int ryi, int altstate )
 {
-    //Set up our buffer array to be picked up by mapclass
-    rxi -= 100;
-    ryi -= 100;
-    if (rxi < 0) rxi += mapwidth;
-    if (ryi < 0) ryi += mapheight;
-    if (rxi >= mapwidth) rxi -= mapwidth;
-    if (ryi >= mapheight) ryi -= mapheight;
+//Set up our buffer array to be picked up by mapclass
+rxi -= 100;
+ryi -= 100;
+if (rxi < 0) rxi += mapwidth;
+if (ryi < 0) ryi += mapheight;
+if (rxi >= mapwidth) rxi -= mapwidth;
+if (ryi >= mapheight) ryi -= mapheight;
 
-    int tower = get_tower(rxi, ryi);
+int tower = get_tower(rxi, ryi);
 
-    if (tower) {
-        int ymax = tower_size(tower);
-        for (int y = 0; y < ymax; y++)
-            for (int x = 0; x < 40; x++)
-                swapmap[x + y*40] = towers[tower-1].tiles[x + y*40];
+if (tower) {
+int ymax = tower_size(tower);
+for (int y = 0; y < ymax; y++)
+	for (int x = 0; x < 40; x++)
+		swapmap[x + y*40] = towers[tower-1].tiles[x + y*40];
 
-        return;
-    }
+return;
+}
 
-    int thisstate = -1;
-    if (altstate != 0)
-        thisstate = getedaltstatenum(rxi, ryi, altstate);
+int thisstate = -1;
+if (altstate != 0)
+thisstate = getedaltstatenum(rxi, ryi, altstate);
 
-    if (thisstate == -1) { // Didn't find the alt state, or not using one
-        for (int j = 0; j < 30; j++)
-            for (int i = 0; i < 40; i++)
-                swapmap[i+(j*40)]=contents[i+(rxi*40)+vmult[j+(ryi*30)]];
-    } else {
-        for (int j = 0; j < 30; j++)
-            for (int i = 0; i < 40; i++)
-                swapmap[i + j*40] = altstates[thisstate].tiles[i + j*40];
-    }
+if (thisstate == -1) { // Didn't find the alt state, or not using one
+for (int j = 0; j < 30; j++)
+	for (int i = 0; i < 40; i++)
+		swapmap[i+(j*40)]=contents[i+(rxi*40)+vmult[j+(ryi*30)]];
+} else {
+for (int j = 0; j < 30; j++)
+	for (int i = 0; i < 40; i++)
+		swapmap[i + j*40] = altstates[thisstate].tiles[i + j*40];
+}
 }
 
 int editorclass::getlevelcol(int t)
 {
-    if(level[t].tileset==0)  //Station
-    {
-        if (level[t].tilecol == -1)
-            // Fix gray enemies
-            grayenemieskludge = true;
-        return level[t].tilecol;
-    }
-    else if(level[t].tileset==1)   //Outside
-    {
-        return 32+level[t].tilecol;
-    }
-    else if(level[t].tileset==2)   //Lab
-    {
-        return 40+level[t].tilecol;
-    }
-    else if(level[t].tileset==3)   //Warp Zone
-    {
-        if (level[t].tilecol == 6)
-            // Fix gray enemies
-            grayenemieskludge = true;
-        return 46+level[t].tilecol;
-    }
-    else if(level[t].tileset==4)   //Ship
-    {
-        return 52+level[t].tilecol;
-    }
-    else if (level[t].tileset==5)   //Tower
-    {
-        // WARNING: This is duplicated in mapclass::updatetowerentcol()!
-        return 58 + level[t].tilecol/5;
-    }
-    return 0;
+if(level[t].tileset==0)  //Station
+{
+if (level[t].tilecol == -1)
+	// Fix gray enemies
+	grayenemieskludge = true;
+return level[t].tilecol;
+}
+else if(level[t].tileset==1)   //Outside
+{
+return 32+level[t].tilecol;
+}
+else if(level[t].tileset==2)   //Lab
+{
+return 40+level[t].tilecol;
+}
+else if(level[t].tileset==3)   //Warp Zone
+{
+if (level[t].tilecol == 6)
+	// Fix gray enemies
+	grayenemieskludge = true;
+return 46+level[t].tilecol;
+}
+else if(level[t].tileset==4)   //Ship
+{
+return 52+level[t].tilecol;
+}
+else if (level[t].tileset==5)   //Tower
+{
+// WARNING: This is duplicated in mapclass::updatetowerentcol()!
+return 58 + level[t].tilecol/5;
+}
+return 0;
 }
 
 int editorclass::getenemycol(int t)
 {
-    switch(t)
-    {
-        //RED
-    case 3:
-    case 7:
-    case 12:
-    case 23:
-    case 28:
-    case 34:
-    case 42:
-    case 48:
-    case 58:
-    case 59:
-        return 6;
-        break;
-        //GREEN
-    case 5:
-    case 9:
-    case 22:
-    case 25:
-    case 29:
-    case 31:
-    case 38:
-    case 46:
-    case 52:
-    case 53:
-    case 61:
-        return 7;
-        break;
-        //BLUE
-    case 1:
-    case 6:
-    case 14:
-    case 27:
-    case 33:
-    case 44:
-    case 50:
-    case 57:
-        return 12;
-        break;
-        //YELLOW
-    case 4:
-    case 17:
-    case 24:
-    case 30:
-    case 37:
-    case 45:
-    case 51:
-    case 55:
-    case 60:
-        return 9;
-        break;
-        //PURPLE
-    case 2:
-    case 11:
-    case 15:
-    case 19:
-    case 32:
-    case 36:
-    case 49:
-    case 63:
-        return 20;
-        break;
-        //CYAN
-    case 8:
-    case 10:
-    case 13:
-    case 18:
-    case 26:
-    case 35:
-    case 41:
-    case 47:
-    case 54:
-    case 62:
-        return 11;
-        break;
-        //PINK
-    case 16:
-    case 20:
-    case 39:
-    case 43:
-    case 56:
-    case 64:
-        return 8;
-        break;
-        //ORANGE
-    case 21:
-    case 40:
-        return 17;
-        break;
-    default:
-        return 6;
-        break;
-    }
-    return 0;
+switch(t)
+{
+//RED
+case 3:
+case 7:
+case 12:
+case 23:
+case 28:
+case 34:
+case 42:
+case 48:
+case 58:
+case 59:
+return 6;
+break;
+//GREEN
+case 5:
+case 9:
+case 22:
+case 25:
+case 29:
+case 31:
+case 38:
+case 46:
+case 52:
+case 53:
+case 61:
+return 7;
+break;
+//BLUE
+case 1:
+case 6:
+case 14:
+case 27:
+case 33:
+case 44:
+case 50:
+case 57:
+return 12;
+break;
+//YELLOW
+case 4:
+case 17:
+case 24:
+case 30:
+case 37:
+case 45:
+case 51:
+case 55:
+case 60:
+return 9;
+break;
+//PURPLE
+case 2:
+case 11:
+case 15:
+case 19:
+case 32:
+case 36:
+case 49:
+case 63:
+return 20;
+break;
+//CYAN
+case 8:
+case 10:
+case 13:
+case 18:
+case 26:
+case 35:
+case 41:
+case 47:
+case 54:
+case 62:
+return 11;
+break;
+//PINK
+case 16:
+case 20:
+case 39:
+case 43:
+case 56:
+case 64:
+return 8;
+break;
+//ORANGE
+case 21:
+case 40:
+return 17;
+break;
+default:
+return 6;
+break;
+}
+return 0;
 }
 
 int editorclass::getwarpbackground(int rx, int ry)
 {
-    int tmp=rx+(maxwidth*ry);
-    switch(level[tmp].tileset)
-    {
-    case 0: //Space Station
-        switch(level[tmp].tilecol)
-        {
-        case 0:
-            return 3;
-            break;
-        case 1:
-            return 2;
-            break;
-        case 2:
-            return 1;
-            break;
-        case 3:
-            return 4;
-            break;
-        case 4:
-            return 5;
-            break;
-        case 5:
-            return 3;
-            break;
-        case 6:
-            return 1;
-            break;
-        case 7:
-            return 0;
-            break;
-        case 8:
-            return 5;
-            break;
-        case 9:
-            return 0;
-            break;
-        case 10:
-            return 2;
-            break;
-        case 11:
-            return 1;
-            break;
-        case 12:
-            return 5;
-            break;
-        case 13:
-            return 0;
-            break;
-        case 14:
-            return 3;
-            break;
-        case 15:
-            return 2;
-            break;
-        case 16:
-            return 4;
-            break;
-        case 17:
-            return 0;
-            break;
-        case 18:
-            return 3;
-            break;
-        case 19:
-            return 1;
-            break;
-        case 20:
-            return 4;
-            break;
-        case 21:
-            return 5;
-            break;
-        case 22:
-            return 1;
-            break;
-        case 23:
-            return 4;
-            break;
-        case 24:
-            return 5;
-            break;
-        case 25:
-            return 0;
-            break;
-        case 26:
-            return 3;
-            break;
-        case 27:
-            return 1;
-            break;
-        case 28:
-            return 5;
-            break;
-        case 29:
-            return 4;
-            break;
-        case 30:
-            return 5;
-            break;
-        case 31:
-            return 2;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    case 1: //Outside
-        switch(level[tmp].tilecol)
-        {
-        case 0:
-            return 3;
-            break;
-        case 1:
-            return 1;
-            break;
-        case 2:
-            return 0;
-            break;
-        case 3:
-            return 2;
-            break;
-        case 4:
-            return 4;
-            break;
-        case 5:
-            return 5;
-            break;
-        case 6:
-            return 2;
-            break;
-        case 7:
-            return 4;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    case 2: //Lab
-        switch(level[tmp].tilecol)
-        {
-        case 0:
-            return 0;
-            break;
-        case 1:
-            return 1;
-            break;
-        case 2:
-            return 2;
-            break;
-        case 3:
-            return 3;
-            break;
-        case 4:
-            return 4;
-            break;
-        case 5:
-            return 5;
-            break;
-        case 6:
-            return 6;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    case 3: //Warp Zone
-        switch(level[tmp].tilecol)
-        {
-        case 0:
-            return 0;
-            break;
-        case 1:
-            return 1;
-            break;
-        case 2:
-            return 2;
-            break;
-        case 3:
-            return 3;
-            break;
-        case 4:
-            return 4;
-            break;
-        case 5:
-            return 5;
-            break;
-        case 6:
-            return 6;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    case 4: //Ship
-        switch(level[tmp].tilecol)
-        {
-        case 0:
-            return 5;
-            break;
-        case 1:
-            return 0;
-            break;
-        case 2:
-            return 4;
-            break;
-        case 3:
-            return 2;
-            break;
-        case 4:
-            return 3;
-            break;
-        case 5:
-            return 1;
-            break;
-        case 6:
-            return 6;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    case 5: //Tower
-        temp = (level[tmp].tilecol) / 5;
-        switch(temp)
-        {
-        case 0:
-            return 1;
-            break;
-        case 1:
-            return 4;
-            break;
-        case 2:
-            return 5;
-            break;
-        case 3:
-            return 0;
-            break;
-        case 4:
-            return 3;
-            break;
-        case 5:
-            return 2;
-            break;
-        default:
-            return 6;
-            break;
-        }
-        break;
-    default:
-        return 6;
-        break;
-    }
+int tmp=rx+(maxwidth*ry);
+switch(level[tmp].tileset)
+{
+case 0: //Space Station
+switch(level[tmp].tilecol)
+{
+case 0:
+	return 3;
+	break;
+case 1:
+	return 2;
+	break;
+case 2:
+	return 1;
+	break;
+case 3:
+	return 4;
+	break;
+case 4:
+	return 5;
+	break;
+case 5:
+	return 3;
+	break;
+case 6:
+	return 1;
+	break;
+case 7:
+	return 0;
+	break;
+case 8:
+	return 5;
+	break;
+case 9:
+	return 0;
+	break;
+case 10:
+	return 2;
+	break;
+case 11:
+	return 1;
+	break;
+case 12:
+	return 5;
+	break;
+case 13:
+	return 0;
+	break;
+case 14:
+	return 3;
+	break;
+case 15:
+	return 2;
+	break;
+case 16:
+	return 4;
+	break;
+case 17:
+	return 0;
+	break;
+case 18:
+	return 3;
+	break;
+case 19:
+	return 1;
+	break;
+case 20:
+	return 4;
+	break;
+case 21:
+	return 5;
+	break;
+case 22:
+	return 1;
+	break;
+case 23:
+	return 4;
+	break;
+case 24:
+	return 5;
+	break;
+case 25:
+	return 0;
+	break;
+case 26:
+	return 3;
+	break;
+case 27:
+	return 1;
+	break;
+case 28:
+	return 5;
+	break;
+case 29:
+	return 4;
+	break;
+case 30:
+	return 5;
+	break;
+case 31:
+	return 2;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+case 1: //Outside
+switch(level[tmp].tilecol)
+{
+case 0:
+	return 3;
+	break;
+case 1:
+	return 1;
+	break;
+case 2:
+	return 0;
+	break;
+case 3:
+	return 2;
+	break;
+case 4:
+	return 4;
+	break;
+case 5:
+	return 5;
+	break;
+case 6:
+	return 2;
+	break;
+case 7:
+	return 4;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+case 2: //Lab
+switch(level[tmp].tilecol)
+{
+case 0:
+	return 0;
+	break;
+case 1:
+	return 1;
+	break;
+case 2:
+	return 2;
+	break;
+case 3:
+	return 3;
+	break;
+case 4:
+	return 4;
+	break;
+case 5:
+	return 5;
+	break;
+case 6:
+	return 6;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+case 3: //Warp Zone
+switch(level[tmp].tilecol)
+{
+case 0:
+	return 0;
+	break;
+case 1:
+	return 1;
+	break;
+case 2:
+	return 2;
+	break;
+case 3:
+	return 3;
+	break;
+case 4:
+	return 4;
+	break;
+case 5:
+	return 5;
+	break;
+case 6:
+	return 6;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+case 4: //Ship
+switch(level[tmp].tilecol)
+{
+case 0:
+	return 5;
+	break;
+case 1:
+	return 0;
+	break;
+case 2:
+	return 4;
+	break;
+case 3:
+	return 2;
+	break;
+case 4:
+	return 3;
+	break;
+case 5:
+	return 1;
+	break;
+case 6:
+	return 6;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+case 5: //Tower
+temp = (level[tmp].tilecol) / 5;
+switch(temp)
+{
+case 0:
+	return 1;
+	break;
+case 1:
+	return 4;
+	break;
+case 2:
+	return 5;
+	break;
+case 3:
+	return 0;
+	break;
+case 4:
+	return 3;
+	break;
+case 5:
+	return 2;
+	break;
+default:
+	return 6;
+	break;
+}
+break;
+default:
+return 6;
+break;
+}
 }
 
 int editorclass::getenemyframe(int t, int dir)
 {
-    switch(t)
-    {
-    case 0:
-        return 78;
-        break;
-    case 1:
-        return 88;
-        break;
-    case 2:
-        return 36;
-        break;
-    case 3:
-        return 164;
-        break;
-    case 4:
-        return 68;
-        break;
-    case 5:
-        return 48;
-        break;
-    case 6:
-        return 176;
-        break;
-    case 7:
-        return 168;
-        break;
-    case 8:
-        return 112;
-        break;
-    case 9:
-        return 114;
-        break;
-    case 10:
-        return 92;
-        break;
-    case 11:
-        return 40;
-        break;
-    case 12:
-        return 28;
-        break;
-    case 13:
-        return 32;
-        break;
-    case 14:
-        return 100;
-        break;
-    case 15:
-        return 52;
-        break;
-    case 16:
-        return dir == 2 ? 66 : 54;
-        break;
-    case 17:
-        return 51;
-        break;
-    case 18:
-        return dir == 2 ? 160 : 156;
-        break;
-    case 19:
-        return 44;
-        break;
-    case 20:
-        return 106;
-        break;
-    case 21:
-        return 82;
-        break;
-    case 22:
-        return 116;
-        break;
-    case 23:
-        return 64;
-        break;
-    case 24:
-        return 56;
-        break;
-    case 25:
-        return 172;
-        break;
-    case 26:
-        return 24;
-        break;
-    case 27:
-        return 120;
-        break;
-    default:
-        return 78;
-        break;
-    }
-    return 78;
+switch(t)
+{
+case 0:
+return 78;
+break;
+case 1:
+return 88;
+break;
+case 2:
+return 36;
+break;
+case 3:
+return 164;
+break;
+case 4:
+return 68;
+break;
+case 5:
+return 48;
+break;
+case 6:
+return 176;
+break;
+case 7:
+return 168;
+break;
+case 8:
+return 112;
+break;
+case 9:
+return 114;
+break;
+case 10:
+return 92;
+break;
+case 11:
+return 40;
+break;
+case 12:
+return 28;
+break;
+case 13:
+return 32;
+break;
+case 14:
+return 100;
+break;
+case 15:
+return 52;
+break;
+case 16:
+return dir == 2 ? 66 : 54;
+break;
+case 17:
+return 51;
+break;
+case 18:
+return dir == 2 ? 160 : 156;
+break;
+case 19:
+return 44;
+break;
+case 20:
+return 106;
+break;
+case 21:
+return 82;
+break;
+case 22:
+return 116;
+break;
+case 23:
+return 64;
+break;
+case 24:
+return 56;
+break;
+case 25:
+return 172;
+break;
+case 26:
+return 24;
+break;
+case 27:
+return 120;
+break;
+default:
+return 78;
+break;
+}
+return 78;
 }
 
 
 void editorclass::placetile( int x, int y, int t )
 {
-    // Unused, no need to add altstates support to this function
-    if(x>=0 && y>=0 && x<mapwidth*40 && y<mapheight*30)
-    {
-        contents[x+(levx*40)+vmult[y+(levy*30)]]=t;
-    }
+// Unused, no need to add altstates support to this function
+if(x>=0 && y>=0 && x<mapwidth*40 && y<mapheight*30)
+{
+contents[x+(levx*40)+vmult[y+(levy*30)]]=t;
+}
 }
 
 void editorclass::placetilelocal( int x, int y, int t )
 {
-    if(x>=0 && y>=0 && x<40 && y<30)
-        settilelocal(x, y, t);
-    updatetiles=true;
+if(x>=0 && y>=0 && x<40 && y<30)
+settilelocal(x, y, t);
+updatetiles=true;
 }
 
 int editorclass::gettilelocal(int x, int y)
 {
-    int tower = get_tower(levx, levy);
-    if (tower) {
-        y += ypos;
+int tower = get_tower(levx, levy);
+if (tower) {
+y += ypos;
 
-        // Show spikes beyond the tower boundaries
-        if (y < 0)
-            return 159;
-        if (y >= tower_size(tower))
-            return 158;
+// Show spikes beyond the tower boundaries
+if (y < 0)
+	return 159;
+if (y >= tower_size(tower))
+	return 158;
 
-        // Mark tower entry point for current screen with green
-        int tile = towers[tower-1].tiles[x + y*40];
-        int entrypos = level[levx + levy*maxwidth].tower_row;
-        if (y >= entrypos && y <= (entrypos + 29) && tile)
-            tile += 300;
+// Mark tower entry point for current screen with green
+int tile = towers[tower-1].tiles[x + y*40];
+int entrypos = level[levx + levy*maxwidth].tower_row;
+if (y >= entrypos && y <= (entrypos + 29) && tile)
+	tile += 300;
 
-        return tile;
-    }
+return tile;
+}
 
-    if (levaltstate == 0)
-        return contents[x + levx*40 + vmult[y + levy*30]];
-    else
-        return altstates[getedaltstatenum(levx, levy, levaltstate)].tiles[x + y*40];
+if (levaltstate == 0)
+return contents[x + levx*40 + vmult[y + levy*30]];
+else
+return altstates[getedaltstatenum(levx, levy, levaltstate)].tiles[x + y*40];
 }
 
 void editorclass::settilelocal(int x, int y, int tile)
 {
-    int tower = get_tower(levx, levy);
-    if (tower) {
-        y += ypos;
+int tower = get_tower(levx, levy);
+if (tower) {
+y += ypos;
 
-        upsize_tower(tower, y);
-        if (y < 0)
-            y = 0;
+upsize_tower(tower, y);
+if (y < 0)
+	y = 0;
 
-        towers[tower-1].tiles[x + y*40] = tile % 30;
-        downsize_tower(tower);
-    } else if (levaltstate == 0)
-        contents[x + levx*40 + vmult[y + levy*30]] = tile;
-    else
-        altstates[getedaltstatenum(levx, levy, levaltstate)].tiles[x + y*40] = tile;
+towers[tower-1].tiles[x + y*40] = tile % 30;
+downsize_tower(tower);
+} else if (levaltstate == 0)
+contents[x + levx*40 + vmult[y + levy*30]] = tile;
+else
+altstates[getedaltstatenum(levx, levy, levaltstate)].tiles[x + y*40] = tile;
 }
 
 int editorclass::base( int x, int y )
 {
-    //Return the base tile for the given tileset and colour
-    temp=x+(y*maxwidth);
-    if(level[temp].tileset==0)  //Space Station
-    {
-        if(level[temp].tilecol>=22)
-        {
-            return 483 + ((level[temp].tilecol-22)*3);
-        }
-        else if(level[temp].tilecol>=11)
-        {
-            return 283 + ((level[temp].tilecol-11)*3);
-        }
-        else
-        {
-            return 83 + (level[temp].tilecol*3);
-        }
-    }
-    else if(level[temp].tileset==1)   //Outside
-    {
-        return 480 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==2)   //Lab
-    {
-        return 280 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==3)   //Warp Zone/Intermission
-    {
-        return 80 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==4)   //SHIP
-    {
-        return 101 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==5)   //Tower
-    {
-        return 12 + (level[temp].tilecol*30);
-    }
-    return 0;
+//Return the base tile for the given tileset and colour
+temp=x+(y*maxwidth);
+if(level[temp].tileset==0)  //Space Station
+{
+if(level[temp].tilecol>=22)
+{
+	return 483 + ((level[temp].tilecol-22)*3);
+}
+else if(level[temp].tilecol>=11)
+{
+	return 283 + ((level[temp].tilecol-11)*3);
+}
+else
+{
+	return 83 + (level[temp].tilecol*3);
+}
+}
+else if(level[temp].tileset==1)   //Outside
+{
+return 480 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==2)   //Lab
+{
+return 280 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==3)   //Warp Zone/Intermission
+{
+return 80 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==4)   //SHIP
+{
+return 101 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==5)   //Tower
+{
+return 12 + (level[temp].tilecol*30);
+}
+return 0;
 }
 
 int editorclass::backbase( int x, int y )
 {
-    //Return the base tile for the background of the given tileset and colour
-    temp=x+(y*maxwidth);
-    if(level[temp].tileset==0)  //Space Station
-    {
-        //Pick depending on tilecol
-        switch(level[temp].tilecol)
-        {
-        case 0:
-        case 5:
-        case 26:
-            return 680; //Blue
-            break;
-        case 3:
-        case 16:
-        case 23:
-            return 683; //Yellow
-            break;
-        case 9:
-        case 12:
-        case 21:
-            return 686; //Greeny Cyan
-            break;
-        case 4:
-        case 8:
-        case 24:
-        case 28:
-        case 30:
-            return 689; //Green
-            break;
-        case 20:
-        case 29:
-            return 692; //Orange
-            break;
-        case 2:
-        case 6:
-        case 11:
-        case 22:
-        case 27:
-            return 695; //Red
-            break;
-        case 1:
-        case 10:
-        case 15:
-        case 19:
-        case 31:
-            return 698; //Pink
-            break;
-        case 14:
-        case 18:
-            return 701; //Dark Blue
-            break;
-        case 7:
-        case 13:
-        case 17:
-        case 25:
-            return 704; //Cyan
-            break;
-        default:
-            return 680;
-            break;
-        }
+//Return the base tile for the background of the given tileset and colour
+temp=x+(y*maxwidth);
+if(level[temp].tileset==0)  //Space Station
+{
+//Pick depending on tilecol
+switch(level[temp].tilecol)
+{
+case 0:
+case 5:
+case 26:
+	return 680; //Blue
+	break;
+case 3:
+case 16:
+case 23:
+	return 683; //Yellow
+	break;
+case 9:
+case 12:
+case 21:
+	return 686; //Greeny Cyan
+	break;
+case 4:
+case 8:
+case 24:
+case 28:
+case 30:
+	return 689; //Green
+	break;
+case 20:
+case 29:
+	return 692; //Orange
+	break;
+case 2:
+case 6:
+case 11:
+case 22:
+case 27:
+	return 695; //Red
+	break;
+case 1:
+case 10:
+case 15:
+case 19:
+case 31:
+	return 698; //Pink
+	break;
+case 14:
+case 18:
+	return 701; //Dark Blue
+	break;
+case 7:
+case 13:
+case 17:
+case 25:
+	return 704; //Cyan
+	break;
+default:
+	return 680;
+	break;
+}
 
-    }
-    else if(level[temp].tileset==1)   //outside
-    {
-        return 680 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==2)   //Lab
-    {
-        return 0;
-    }
-    else if(level[temp].tileset==3)   //Warp Zone/Intermission
-    {
-        return 120 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==4)   //SHIP
-    {
-        return 741 + (level[temp].tilecol*3);
-    }
-    else if(level[temp].tileset==5)   //Tower
-    {
-        return 28 + (level[temp].tilecol*30);
-    }
-    return 0;
+}
+else if(level[temp].tileset==1)   //outside
+{
+return 680 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==2)   //Lab
+{
+return 0;
+}
+else if(level[temp].tileset==3)   //Warp Zone/Intermission
+{
+return 120 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==4)   //SHIP
+{
+return 741 + (level[temp].tilecol*3);
+}
+else if(level[temp].tileset==5)   //Tower
+{
+return 28 + (level[temp].tilecol*30);
+}
+return 0;
 }
 
 enum tiletyp
 editorclass::gettiletyplocal(int x, int y)
 {
-    return gettiletyp(level[levx + levy*maxwidth].tileset, at(x, y));
+return gettiletyp(level[levx + levy*maxwidth].tileset, at(x, y));
 }
 
 enum tiletyp
 editorclass::getabstiletyp(int x, int y)
 {
-    int tile = absat(&x, &y);
-    int room = x / 40 + ((y / 30)*maxwidth);
+int tile = absat(&x, &y);
+int room = x / 40 + ((y / 30)*maxwidth);
 
-    return gettiletyp(level[room].tileset, tile);
+return gettiletyp(level[room].tileset, tile);
 }
 
 enum tiletyp
 editorclass::gettiletyp(int tileset, int tile)
 {
-    if (tile == 0)
-        return TILE_NONE;
+if (tile == 0)
+return TILE_NONE;
 
-    if (tileset == 5) {
-        tile = tile % 30;
-        if (tile >= 6 && tile <= 11)
-            return TILE_SPIKE;
-        if (tile >= 12 && tile <= 27)
-            return TILE_FOREGROUND;
-        return TILE_BACKGROUND;
-    }
+if (tileset == 5) {
+tile = tile % 30;
+if (tile >= 6 && tile <= 11)
+	return TILE_SPIKE;
+if (tile >= 12 && tile <= 27)
+	return TILE_FOREGROUND;
+return TILE_BACKGROUND;
+}
 
-    // non-space station has more spikes
-    int lastspike = 50;
-    if (tileset != 0)
-        lastspike = 74;
+// non-space station has more spikes
+int lastspike = 50;
+if (tileset != 0)
+lastspike = 74;
 
-    if ((tile >= 6 && tile <= 9) || (tile >= 49 && tile <= lastspike))
-        return TILE_SPIKE;
-    if (tile == 1 || (tile >= 80 && tile <= 679))
-        return TILE_FOREGROUND;
-    return TILE_BACKGROUND;
+if ((tile >= 6 && tile <= 9) || (tile >= 49 && tile <= lastspike))
+return TILE_SPIKE;
+if (tile == 1 || (tile >= 80 && tile <= 679))
+return TILE_FOREGROUND;
+return TILE_BACKGROUND;
 }
 
 int editorclass::at( int x, int y )
 {
-    if(x<0) return at(0,y);
-    if(y<0) return at(x,0);
-    if(x>=40) return at(39,y);
-    if(y>=30) return at(x,29);
+if(x<0) return at(0,y);
+if(y<0) return at(x,0);
+if(x>=40) return at(39,y);
+if(y>=30) return at(x,29);
 
-    return gettilelocal(x, y);
+return gettilelocal(x, y);
 }
 
 int
 editorclass::absat(int *x, int *y)
 {
-    if (*x < 0) *x = (*x) +mapwidth*40;
-    if (*y < 0) *y = (*y) +mapheight*30;
-    if (*x >= (mapwidth*40)) *x = (*x) - mapwidth*40;
-    if (*y >= (mapheight*30)) *y = (*y) - mapheight*30;
-    return contents[(*x) + vmult[*y]];
+if (*x < 0) *x = (*x) +mapwidth*40;
+if (*y < 0) *y = (*y) +mapheight*30;
+if (*x >= (mapwidth*40)) *x = (*x) - mapwidth*40;
+if (*y >= (mapheight*30)) *y = (*y) - mapheight*30;
+return contents[(*x) + vmult[*y]];
 }
 int editorclass::freewrap( int x, int y )
 {
-    temp = getabstiletyp(x, y);
-    if (temp != TILE_FOREGROUND) return 0;
-    return 1;
+temp = getabstiletyp(x, y);
+if (temp != TILE_FOREGROUND) return 0;
+return 1;
 }
 
 int editorclass::backonlyfree( int x, int y )
 {
-    //Returns 1 if tile is a background tile, 0 otherwise
-    temp = gettiletyplocal(x, y);
-    if (temp == TILE_BACKGROUND)
-        return 1;
-    return 0;
+//Returns 1 if tile is a background tile, 0 otherwise
+temp = gettiletyplocal(x, y);
+if (temp == TILE_BACKGROUND)
+return 1;
+return 0;
 }
 
 int editorclass::backfree( int x, int y )
 {
-    //Returns 1 if tile is nonzero
-    if (gettiletyplocal(x, y) == TILE_NONE)
-        return 0;
-    return 1;
+//Returns 1 if tile is nonzero
+if (gettiletyplocal(x, y) == TILE_NONE)
+return 0;
+return 1;
 }
 
 int editorclass::towerspikefree(int x, int y) {
-    // Uses absolute y in tower mode
-    int tower = get_tower(levx, levy);
-    int size = tower_size(tower);
-    if (!intower())
-        return spikefree(x, y);
+// Uses absolute y in tower mode
+int tower = get_tower(levx, levy);
+int size = tower_size(tower);
+if (!intower())
+return spikefree(x, y);
 
-    if (x == -1) x = 0;
-    if (x == 40) x = 39;
-    if (y == -1) y = 0;
-    if (y >= size) y = size - 1;
+if (x == -1) x = 0;
+if (x == 40) x = 39;
+if (y == -1) y = 0;
+if (y >= size) y = size - 1;
 
-    int tile = towers[tower-1].tiles[x + y*40];
-    temp = gettiletyp(level[levx + levy * maxwidth].tileset, tile);
-    if (temp == TILE_FOREGROUND || temp == TILE_BACKGROUND || temp == TILE_SPIKE)
-        return 1;
-    return 0;
+int tile = towers[tower-1].tiles[x + y*40];
+temp = gettiletyp(level[levx + levy * maxwidth].tileset, tile);
+if (temp == TILE_FOREGROUND || temp == TILE_BACKGROUND || temp == TILE_SPIKE)
+return 1;
+return 0;
 }
 
 int editorclass::spikefree(int x, int y) {
-    //Returns 0 if tile is not a block or spike, 1 otherwise
-    if (x == -1) x = 0;
-    if (x == 40) x = 39;
-    if (y == -1) y = 0;
-    if (y == 30) y = 29;
+//Returns 0 if tile is not a block or spike, 1 otherwise
+if (x == -1) x = 0;
+if (x == 40) x = 39;
+if (y == -1) y = 0;
+if (y == 30) y = 29;
 
-    temp = gettiletyplocal(x, y);
-    if (temp == TILE_FOREGROUND || temp == TILE_BACKGROUND || temp == TILE_SPIKE)
-        return 1;
-    return 0;
+temp = gettiletyplocal(x, y);
+if (temp == TILE_FOREGROUND || temp == TILE_BACKGROUND || temp == TILE_SPIKE)
+return 1;
+return 0;
 }
 
 int editorclass::getfree(enum tiletyp thistiletyp)
 {
-    //Returns 0 if tile is not a block, 1 otherwise
-    if (thistiletyp != TILE_FOREGROUND)
-        return 0;
-    return 1;
+//Returns 0 if tile is not a block, 1 otherwise
+if (thistiletyp != TILE_FOREGROUND)
+return 0;
+return 1;
 }
 
 int editorclass::towerfree(int x, int y) {
-    // Uses absolute y in tower mode
-    int tower = get_tower(levx, levy);
-    int size = tower_size(tower);
-    if (!intower())
-        return free(x, y);
+// Uses absolute y in tower mode
+int tower = get_tower(levx, levy);
+int size = tower_size(tower);
+if (!intower())
+return free(x, y);
 
-    if (x == -1) x = 0;
-    if (x == 40) x = 39;
-    if (y == -1) y = 0;
-    if (y >= size) y = size - 1;
+if (x == -1) x = 0;
+if (x == 40) x = 39;
+if (y == -1) y = 0;
+if (y >= size) y = size - 1;
 
-    int tile = towers[tower-1].tiles[x + y*40];
-    return getfree(gettiletyp(level[levx + levy * maxwidth].tileset,
-                              tile));
+int tile = towers[tower-1].tiles[x + y*40];
+return getfree(gettiletyp(level[levx + levy * maxwidth].tileset,
+					  tile));
 }
 
 int editorclass::free(int x, int y) {
-    //Returns 0 if tile is not a block, 1 otherwise
-    if (x == -1) x = 0;
-    if (x == 40) x = 39;
-    if (y == -1) y = 0;
-    if (y == 30) y = 29;
+//Returns 0 if tile is not a block, 1 otherwise
+if (x == -1) x = 0;
+if (x == 40) x = 39;
+if (y == -1) y = 0;
+if (y == 30) y = 29;
 
-    return getfree(gettiletyplocal(x, y));
+return getfree(gettiletyplocal(x, y));
 }
 
 int editorclass::absfree( int x, int y )
 {
-    //Returns 0 if tile is not a block, 1 otherwise, abs on grid
-    if(x>=0 && y>=0 && x<mapwidth*40 && y<mapheight*30)
-        return getfree(getabstiletyp(x, y));
-    return 1;
+//Returns 0 if tile is not a block, 1 otherwise, abs on grid
+if(x>=0 && y>=0 && x<mapwidth*40 && y<mapheight*30)
+return getfree(getabstiletyp(x, y));
+return 1;
 }
 
 int editorclass::match( int x, int y )
 {
-    if (intower())
-        y += ypos;
+if (intower())
+y += ypos;
 
-    if(towerfree(x-1,y)==0 && towerfree(x,y-1)==0 &&
-       towerfree(x+1,y)==0 && towerfree(x,y+1)==0) return 0;
+if(towerfree(x-1,y)==0 && towerfree(x,y-1)==0 &&
+towerfree(x+1,y)==0 && towerfree(x,y+1)==0) return 0;
 
-    if(towerfree(x-1,y)==0 && towerfree(x,y-1)==0) return 10;
-    if(towerfree(x+1,y)==0 && towerfree(x,y-1)==0) return 11;
-    if(towerfree(x-1,y)==0 && towerfree(x,y+1)==0) return 12;
-    if(towerfree(x+1,y)==0 && towerfree(x,y+1)==0) return 13;
+if(towerfree(x-1,y)==0 && towerfree(x,y-1)==0) return 10;
+if(towerfree(x+1,y)==0 && towerfree(x,y-1)==0) return 11;
+if(towerfree(x-1,y)==0 && towerfree(x,y+1)==0) return 12;
+if(towerfree(x+1,y)==0 && towerfree(x,y+1)==0) return 13;
 
-    if(towerfree(x,y-1)==0) return 1;
-    if(towerfree(x-1,y)==0) return 2;
-    if(towerfree(x,y+1)==0) return 3;
-    if(towerfree(x+1,y)==0) return 4;
-    if(towerfree(x-1,y-1)==0) return 5;
-    if(towerfree(x+1,y-1)==0) return 6;
-    if(towerfree(x-1,y+1)==0) return 7;
-    if(towerfree(x+1,y+1)==0) return 8;
+if(towerfree(x,y-1)==0) return 1;
+if(towerfree(x-1,y)==0) return 2;
+if(towerfree(x,y+1)==0) return 3;
+if(towerfree(x+1,y)==0) return 4;
+if(towerfree(x-1,y-1)==0) return 5;
+if(towerfree(x+1,y-1)==0) return 6;
+if(towerfree(x-1,y+1)==0) return 7;
+if(towerfree(x+1,y+1)==0) return 8;
 
-    return 0;
+return 0;
 }
 
 int editorclass::warpzonematch( int x, int y )
 {
-    if(free(x-1,y)==0 && free(x,y-1)==0 && free(x+1,y)==0 && free(x,y+1)==0) return 0;
+if(free(x-1,y)==0 && free(x,y-1)==0 && free(x+1,y)==0 && free(x,y+1)==0) return 0;
 
-    if(free(x-1,y)==0 && free(x,y-1)==0) return 10;
-    if(free(x+1,y)==0 && free(x,y-1)==0) return 11;
-    if(free(x-1,y)==0 && free(x,y+1)==0) return 12;
-    if(free(x+1,y)==0 && free(x,y+1)==0) return 13;
+if(free(x-1,y)==0 && free(x,y-1)==0) return 10;
+if(free(x+1,y)==0 && free(x,y-1)==0) return 11;
+if(free(x-1,y)==0 && free(x,y+1)==0) return 12;
+if(free(x+1,y)==0 && free(x,y+1)==0) return 13;
 
-    if(free(x,y-1)==0) return 1;
-    if(free(x-1,y)==0) return 2;
-    if(free(x,y+1)==0) return 3;
-    if(free(x+1,y)==0) return 4;
-    if(free(x-1,y-1)==0) return 5;
-    if(free(x+1,y-1)==0) return 6;
-    if(free(x-1,y+1)==0) return 7;
-    if(free(x+1,y+1)==0) return 8;
+if(free(x,y-1)==0) return 1;
+if(free(x-1,y)==0) return 2;
+if(free(x,y+1)==0) return 3;
+if(free(x+1,y)==0) return 4;
+if(free(x-1,y-1)==0) return 5;
+if(free(x+1,y-1)==0) return 6;
+if(free(x-1,y+1)==0) return 7;
+if(free(x+1,y+1)==0) return 8;
 
-    return 0;
+return 0;
 }
 
 int editorclass::outsidematch( int x, int y )
 {
 
-    if(backonlyfree(x-1,y)==0 && backonlyfree(x+1,y)==0) return 2;
-    if(backonlyfree(x,y-1)==0 && backonlyfree(x,y+1)==0) return 1;
+if(backonlyfree(x-1,y)==0 && backonlyfree(x+1,y)==0) return 2;
+if(backonlyfree(x,y-1)==0 && backonlyfree(x,y+1)==0) return 1;
 
-    return 0;
+return 0;
 }
 
 int editorclass::backmatch( int x, int y )
 {
-    //Returns the first position match for a border
-    // 5 1 6
-    // 2 X 4
-    // 7 3 8
-    /*
-    if(at(x-1,y)>=80 && at(x,y-1)>=80) return 10;
-    if(at(x+1,y)>=80 && at(x,y-1)>=80) return 11;
-    if(at(x-1,y)>=80 && at(x,y+1)>=80) return 12;
-    if(at(x+1,y)>=80 && at(x,y+1)>=80) return 13;
+//Returns the first position match for a border
+// 5 1 6
+// 2 X 4
+// 7 3 8
+/*
+if(at(x-1,y)>=80 && at(x,y-1)>=80) return 10;
+if(at(x+1,y)>=80 && at(x,y-1)>=80) return 11;
+if(at(x-1,y)>=80 && at(x,y+1)>=80) return 12;
+if(at(x+1,y)>=80 && at(x,y+1)>=80) return 13;
 
-    if(at(x,y-1)>=80) return 1;
-    if(at(x-1,y)>=80) return 2;
-    if(at(x,y+1)>=80) return 3;
-    if(at(x+1,y)>=80) return 4;
-    if(at(x-1,y-1)>=80) return 5;
-    if(at(x+1,y-1)>=80) return 6;
-    if(at(x-1,y+1)>=80) return 7;
-    if(at(x+1,y+1)>=80) return 8;
-    */
-    if(backfree(x-1,y)==0 && backfree(x,y-1)==0 && backfree(x+1,y)==0 && backfree(x,y+1)==0) return 0;
+if(at(x,y-1)>=80) return 1;
+if(at(x-1,y)>=80) return 2;
+if(at(x,y+1)>=80) return 3;
+if(at(x+1,y)>=80) return 4;
+if(at(x-1,y-1)>=80) return 5;
+if(at(x+1,y-1)>=80) return 6;
+if(at(x-1,y+1)>=80) return 7;
+if(at(x+1,y+1)>=80) return 8;
+*/
+if(backfree(x-1,y)==0 && backfree(x,y-1)==0 && backfree(x+1,y)==0 && backfree(x,y+1)==0) return 0;
 
-    if(backfree(x-1,y)==0 && backfree(x,y-1)==0) return 10;
-    if(backfree(x+1,y)==0 && backfree(x,y-1)==0) return 11;
-    if(backfree(x-1,y)==0 && backfree(x,y+1)==0) return 12;
-    if(backfree(x+1,y)==0 && backfree(x,y+1)==0) return 13;
+if(backfree(x-1,y)==0 && backfree(x,y-1)==0) return 10;
+if(backfree(x+1,y)==0 && backfree(x,y-1)==0) return 11;
+if(backfree(x-1,y)==0 && backfree(x,y+1)==0) return 12;
+if(backfree(x+1,y)==0 && backfree(x,y+1)==0) return 13;
 
-    if(backfree(x,y-1)==0) return 1;
-    if(backfree(x-1,y)==0) return 2;
-    if(backfree(x,y+1)==0) return 3;
-    if(backfree(x+1,y)==0) return 4;
-    if(backfree(x-1,y-1)==0) return 5;
-    if(backfree(x+1,y-1)==0) return 6;
-    if(backfree(x-1,y+1)==0) return 7;
-    if(backfree(x+1,y+1)==0) return 8;
+if(backfree(x,y-1)==0) return 1;
+if(backfree(x-1,y)==0) return 2;
+if(backfree(x,y+1)==0) return 3;
+if(backfree(x+1,y)==0) return 4;
+if(backfree(x-1,y-1)==0) return 5;
+if(backfree(x+1,y-1)==0) return 6;
+if(backfree(x-1,y+1)==0) return 7;
+if(backfree(x+1,y+1)==0) return 8;
 
-    return 0;
+return 0;
 }
 
 int editorclass::toweredgetile(int x, int y)
 {
-    switch(match(x,y))
-    {
-    case 14: // true center
-        return 0;
-        break;
-    case 10: // top left
-        return 5;
-        break;
-    case 11: // top right
-        return 7;
-        break;
-    case 12: // bottom left
-        return 10;
-        break;
-    case 13: // bottom right
-        return 12;
-        break;
-    case 1: // top center
-        return 6;
-        break;
-    case 2: // center left
-        return 8;
-        break;
-    case 3: // bottom center
-        return 11;
-        break;
-    case 4: // center right
-        return 9;
-        break;
-    case 5: // reversed bottom right edge
-        return 4;
-        break;
-    case 6: // reversed bottom left edge
-        return 3;
-        break;
-    case 7: // reversed top right edge
-        return 2;
-        break;
-    case 8: // reversed top left edge
-        return 1;
-        break;
-    case 0:
-    default:
-        return 0;
-        break;
-    }
-    return 0;
+switch(match(x,y))
+{
+case 14: // true center
+return 0;
+break;
+case 10: // top left
+return 5;
+break;
+case 11: // top right
+return 7;
+break;
+case 12: // bottom left
+return 10;
+break;
+case 13: // bottom right
+return 12;
+break;
+case 1: // top center
+return 6;
+break;
+case 2: // center left
+return 8;
+break;
+case 3: // bottom center
+return 11;
+break;
+case 4: // center right
+return 9;
+break;
+case 5: // reversed bottom right edge
+return 4;
+break;
+case 6: // reversed bottom left edge
+return 3;
+break;
+case 7: // reversed top right edge
+return 2;
+break;
+case 8: // reversed top left edge
+return 1;
+break;
+case 0:
+default:
+return 0;
+break;
+}
+return 0;
 }
 int editorclass::edgetile( int x, int y )
 {
-    switch(match(x,y))
-    {
-    case 14: // true center
-        return 0;
-        break;
-    case 10: // top left
-        return 80;
-        break;
-    case 11: // top right
-        return 82;
-        break;
-    case 12: // bottom left
-        return 160;
-        break;
-    case 13: // bottom right
-        return 162;
-        break;
-    case 1: // top center
-        return 81;
-        break;
-    case 2: // center left
-        return 120;
-        break;
-    case 3: // bottom center
-        return 161;
-        break;
-    case 4: // center right
-        return 122;
-        break;
-    case 5: // reversed bottom right edge
-        return 42;
-        break;
-    case 6: // reversed bottom left edge
-        return 41;
-        break;
-    case 7: // reversed top right edge
-        return 2;
-        break;
-    case 8: // reversed top left edge
-        return 1;
-        break;
-    case 0:
-    default:
-        return 0;
-        break;
-    }
-    return 0;
+switch(match(x,y))
+{
+case 14: // true center
+return 0;
+break;
+case 10: // top left
+return 80;
+break;
+case 11: // top right
+return 82;
+break;
+case 12: // bottom left
+return 160;
+break;
+case 13: // bottom right
+return 162;
+break;
+case 1: // top center
+return 81;
+break;
+case 2: // center left
+return 120;
+break;
+case 3: // bottom center
+return 161;
+break;
+case 4: // center right
+return 122;
+break;
+case 5: // reversed bottom right edge
+return 42;
+break;
+case 6: // reversed bottom left edge
+return 41;
+break;
+case 7: // reversed top right edge
+return 2;
+break;
+case 8: // reversed top left edge
+return 1;
+break;
+case 0:
+default:
+return 0;
+break;
+}
+return 0;
 }
 
 int editorclass::spikebase(int x, int y)
 {
-    temp=x+(y*maxwidth);
-    if (level[temp].tileset==5) {
-        return level[temp].tilecol * 30;
-    }
-    return 0;
+temp=x+(y*maxwidth);
+if (level[temp].tileset==5) {
+return level[temp].tilecol * 30;
+}
+return 0;
 }
 
 int editorclass::warpzoneedgetile( int x, int y )
 {
-    switch(backmatch(x,y))
-    {
-    case 14:
-        return 0;
-        break;
-    case 10:
-        return 80;
-        break;
-    case 11:
-        return 82;
-        break;
-    case 12:
-        return 160;
-        break;
-    case 13:
-        return 162;
-        break;
-    case 1:
-        return 81;
-        break;
-    case 2:
-        return 120;
-        break;
-    case 3:
-        return 161;
-        break;
-    case 4:
-        return 122;
-        break;
-    case 5:
-        return 42;
-        break;
-    case 6:
-        return 41;
-        break;
-    case 7:
-        return 2;
-        break;
-    case 8:
-        return 1;
-        break;
-    case 0:
-    default:
-        return 0;
-        break;
-    }
-    return 0;
+switch(backmatch(x,y))
+{
+case 14:
+return 0;
+break;
+case 10:
+return 80;
+break;
+case 11:
+return 82;
+break;
+case 12:
+return 160;
+break;
+case 13:
+return 162;
+break;
+case 1:
+return 81;
+break;
+case 2:
+return 120;
+break;
+case 3:
+return 161;
+break;
+case 4:
+return 122;
+break;
+case 5:
+return 42;
+break;
+case 6:
+return 41;
+break;
+case 7:
+return 2;
+break;
+case 8:
+return 1;
+break;
+case 0:
+default:
+return 0;
+break;
+}
+return 0;
 }
 
 int editorclass::outsideedgetile( int x, int y )
 {
-    switch(outsidematch(x,y))
-    {
-    case 2:
-        return 0;
-        break;
-    case 1:
-        return 1;
-        break;
-    case 0:
-    default:
-        return 2;
-        break;
-    }
-    return 2;
+switch(outsidematch(x,y))
+{
+case 2:
+return 0;
+break;
+case 1:
+return 1;
+break;
+case 0:
+default:
+return 2;
+break;
+}
+return 2;
 }
 
 
 int editorclass::backedgetile( int x, int y )
 {
-    switch(backmatch(x,y))
-    {
-    case 14:
-        return 0;
-        break;
-    case 10:
-        return 80;
-        break;
-    case 11:
-        return 82;
-        break;
-    case 12:
-        return 160;
-        break;
-    case 13:
-        return 162;
-        break;
-    case 1:
-        return 81;
-        break;
-    case 2:
-        return 120;
-        break;
-    case 3:
-        return 161;
-        break;
-    case 4:
-        return 122;
-        break;
-    case 5:
-        return 42;
-        break;
-    case 6:
-        return 41;
-        break;
-    case 7:
-        return 2;
-        break;
-    case 8:
-        return 1;
-        break;
-    case 0:
-    default:
-        return 0;
-        break;
-    }
-    return 0;
+switch(backmatch(x,y))
+{
+case 14:
+return 0;
+break;
+case 10:
+return 80;
+break;
+case 11:
+return 82;
+break;
+case 12:
+return 160;
+break;
+case 13:
+return 162;
+break;
+case 1:
+return 81;
+break;
+case 2:
+return 120;
+break;
+case 3:
+return 161;
+break;
+case 4:
+return 122;
+break;
+case 5:
+return 42;
+break;
+case 6:
+return 41;
+break;
+case 7:
+return 2;
+break;
+case 8:
+return 1;
+break;
+case 0:
+default:
+return 0;
+break;
+}
+return 0;
 }
 
 int editorclass::labspikedir( int x, int y, int t )
 {
-    // a slightly more tricky case
-    if(free(x,y+1)==1) return 63 + (t*2);
-    if(free(x,y-1)==1) return 64 + (t*2);
-    if(free(x-1,y)==1) return 51 + (t*2);
-    if(free(x+1,y)==1) return 52 + (t*2);
-    return 63 + (t*2);
+// a slightly more tricky case
+if(free(x,y+1)==1) return 63 + (t*2);
+if(free(x,y-1)==1) return 64 + (t*2);
+if(free(x-1,y)==1) return 51 + (t*2);
+if(free(x+1,y)==1) return 52 + (t*2);
+return 63 + (t*2);
 }
 
 int editorclass::spikedir( int x, int y )
 {
-    if(free(x,y+1)==1) return 8;
-    if(free(x,y-1)==1) return 9;
-    if(free(x-1,y)==1) return 49;
-    if(free(x+1,y)==1) return 50;
-    return 8;
+if(free(x,y+1)==1) return 8;
+if(free(x,y-1)==1) return 9;
+if(free(x-1,y)==1) return 49;
+if(free(x+1,y)==1) return 50;
+return 8;
 }
 
 int editorclass::towerspikedir(int x, int y) {
-    if (intower())
-        y += ypos;
+if (intower())
+y += ypos;
 
-    if(towerfree(x,y+1) == 1) return 8;
-    if(towerfree(x,y-1) == 1) return 9;
-    if(towerfree(x-1,y) == 1) return 10;
-    if(towerfree(x+1,y) == 1) return 11;
-    return 8;
+if(towerfree(x,y+1) == 1) return 8;
+if(towerfree(x,y-1) == 1) return 9;
+if(towerfree(x-1,y) == 1) return 10;
+if(towerfree(x+1,y) == 1) return 11;
+return 8;
 }
 
 void editorclass::findstartpoint()
 {
-    //Ok! Scan the room for the closest checkpoint
-    int testeditor=-1;
-    //First up; is there a start point on this screen?
-    for(size_t i=0; i<edentity.size(); i++)
-    {
-        //if() on screen
-        if(edentity[i].t==16 && testeditor==-1)
-        {
-            testeditor=i;
-        }
-    }
+//Ok! Scan the room for the closest checkpoint
+int testeditor=-1;
+//First up; is there a start point on this screen?
+for(size_t i=0; i<edentity.size(); i++)
+{
+//if() on screen
+if(edentity[i].t==16 && testeditor==-1)
+{
+	testeditor=i;
+}
+}
 
-    if(testeditor==-1)
-    {
-        game.edsavex = 160;
-        game.edsavey = 120;
-        game.edsaverx = 100;
-        game.edsavery = 100;
-        game.edsavegc = 0;
-        game.edsavey--;
-        game.edsavedir=1;
-    }
-    else
-    {
-        //Start point spawn
-        int tx=(edentity[testeditor].x-(edentity[testeditor].x%40))/40;
-        int ty=(edentity[testeditor].y-(edentity[testeditor].y%30))/30;
-        game.edsavex = ((edentity[testeditor].x%40)*8)-4;
-        game.edsavey = (edentity[testeditor].y%30)*8;
-        game.edsavex += edentity[testeditor].subx;
-        game.edsavey += edentity[testeditor].suby;
-        game.edsaverx = 100+tx;
-        game.edsavery = 100+ty;
-        game.edsavegc = 0;
-        game.edsavey--;
-        game.edsavedir=1-edentity[testeditor].p1;
-    }
+if(testeditor==-1)
+{
+game.edsavex = 160;
+game.edsavey = 120;
+game.edsaverx = 100;
+game.edsavery = 100;
+game.edsavegc = 0;
+game.edsavey--;
+game.edsavedir=1;
+}
+else
+{
+//Start point spawn
+int tx=(edentity[testeditor].x-(edentity[testeditor].x%40))/40;
+int ty=(edentity[testeditor].y-(edentity[testeditor].y%30))/30;
+game.edsavex = ((edentity[testeditor].x%40)*8)-4;
+game.edsavey = (edentity[testeditor].y%30)*8;
+game.edsavex += edentity[testeditor].subx;
+game.edsavey += edentity[testeditor].suby;
+game.edsaverx = 100+tx;
+game.edsavery = 100+ty;
+game.edsavegc = 0;
+game.edsavey--;
+game.edsavedir=1-edentity[testeditor].p1;
+}
 }
 
 void editorclass::saveconvertor()
 {
-    // Unused, no need to add altstates support to this function
+// Unused, no need to add altstates support to this function
 
-    //In the case of resizing breaking a level, this function can fix it
-    maxwidth=20;
-    maxheight=20;
-    int oldwidth=10, oldheight=10;
+//In the case of resizing breaking a level, this function can fix it
+maxwidth=20;
+maxheight=20;
+int oldwidth=10, oldheight=10;
 
-    growing_vector <int> tempcontents;
-    for (int j = 0; j < 30 * oldwidth; j++)
-    {
-        for (int i = 0; i < 40 * oldheight; i++)
-        {
-            tempcontents.push_back(contents[i+(j*40*oldwidth)]);
-        }
-    }
+growing_vector <int> tempcontents;
+for (int j = 0; j < 30 * oldwidth; j++)
+{
+for (int i = 0; i < 40 * oldheight; i++)
+{
+	tempcontents.push_back(contents[i+(j*40*oldwidth)]);
+}
+}
 
-    contents.clear();
-    for (int j = 0; j < 30 * maxheight; j++)
-    {
-        for (int i = 0; i < 40 * maxwidth; i++)
-        {
-            contents.push_back(0);
-        }
-    }
+contents.clear();
+for (int j = 0; j < 30 * maxheight; j++)
+{
+for (int i = 0; i < 40 * maxwidth; i++)
+{
+	contents.push_back(0);
+}
+}
 
-    for (int j = 0; j < 30 * oldheight; j++)
-    {
-        for (int i = 0; i < 40 * oldwidth; i++)
-        {
-            contents[i+(j*40*oldwidth)]=tempcontents[i+(j*40*oldwidth)];
-        }
-    }
+for (int j = 0; j < 30 * oldheight; j++)
+{
+for (int i = 0; i < 40 * oldwidth; i++)
+{
+	contents[i+(j*40*oldwidth)]=tempcontents[i+(j*40*oldwidth)];
+}
+}
 
-    tempcontents.clear();
+tempcontents.clear();
 
-    for (int i = 0; i < 30 * maxheight; i++)
-    {
-        vmult.push_back(int(i * 40 * maxwidth));
-    }
+for (int i = 0; i < 30 * maxheight; i++)
+{
+vmult.push_back(int(i * 40 * maxwidth));
+}
 
-    for (int j = 0; j < maxheight; j++)
-    {
-        for (int i = 0; i < maxwidth; i++)
-        {
-            level[i+(j*maxwidth)].tilecol=(i+j)%6;
-        }
-    }
-    contents.clear();
+for (int j = 0; j < maxheight; j++)
+{
+for (int i = 0; i < maxwidth; i++)
+{
+	level[i+(j*maxwidth)].tilecol=(i+j)%6;
+}
+}
+contents.clear();
 
 }
 
 int editorclass::findtrinket(int t)
 {
-    int ttrinket=0;
-    for(int i=0; i<(int)edentity.size(); i++)
-    {
-        if(i==t) return ttrinket;
-        if(edentity[i].t==9) ttrinket++;
-    }
-    return 0;
+int ttrinket=0;
+for(int i=0; i<(int)edentity.size(); i++)
+{
+if(i==t) return ttrinket;
+if(edentity[i].t==9) ttrinket++;
+}
+return 0;
 }
 
 int editorclass::findcoin(int t)
 {
-    int tcoin=0;
-    for(int i=0; i<(int)edentity.size(); i++)
-    {
-        if(i==t) return tcoin;
-        if(edentity[i].t==8) tcoin++;
-    }
-    return 0;
+int tcoin=0;
+for(int i=0; i<(int)edentity.size(); i++)
+{
+if(i==t) return tcoin;
+if(edentity[i].t==8) tcoin++;
+}
+return 0;
 }
 
 int editorclass::findcrewmate(int t)
 {
-    int ttrinket=0;
-    for(int i=0; i<(int)edentity.size(); i++)
-    {
-        if(i==t) return ttrinket;
-        if(edentity[i].t==15) ttrinket++;
-    }
-    return 0;
+int ttrinket=0;
+for(int i=0; i<(int)edentity.size(); i++)
+{
+if(i==t) return ttrinket;
+if(edentity[i].t==15) ttrinket++;
+}
+return 0;
 }
 
 int editorclass::findwarptoken(int t)
 {
-    int ttrinket=0;
-    for(int i=0; i<(int)edentity.size(); i++)
-    {
-        if(i==t) return ttrinket;
-        if(edentity[i].t==13) ttrinket++;
-    }
-    return 0;
+int ttrinket=0;
+for(int i=0; i<(int)edentity.size(); i++)
+{
+if(i==t) return ttrinket;
+if(edentity[i].t==13) ttrinket++;
+}
+return 0;
 }
 
 // Returns a warp token destination room string
 std::string editorclass::warptokendest(int t) {
-    int ex = edentity[t].p1;
-    int ey = edentity[t].p2;
-    int tower = edentity[t].p3;
-    std::string towerstr = "";
-    int rx, ry;
-    if (!tower || !find_tower(tower, rx, ry)) {
-        rx = ex / 40;
-        ry = ey / 30;
-    } else {
-        if (ey < 20)
-            ey = 20;
-        towerstr = "T"+help.String(tower)+":"+help.String(ey - 20);
-    }
+int ex = edentity[t].p1;
+int ey = edentity[t].p2;
+int tower = edentity[t].p3;
+std::string towerstr = "";
+int rx, ry;
+if (!tower || !find_tower(tower, rx, ry)) {
+rx = ex / 40;
+ry = ey / 30;
+} else {
+if (ey < 20)
+	ey = 20;
+towerstr = "T"+help.String(tower)+":"+help.String(ey - 20);
+}
 
-    // Rooms are 1-indexed in the editor
-    rx++;
-    ry++;
+// Rooms are 1-indexed in the editor
+rx++;
+ry++;
 
-    return "("+help.String(rx)+","+help.String(ry)+")"+towerstr;
+return "("+help.String(rx)+","+help.String(ry)+")"+towerstr;
 }
 
 void editorclass::countstuff()
 {
-    numtrinkets=0;
-    numcoins=0;
-    numcrewmates=0;
-    for(size_t i=0; i<edentity.size(); i++)
-    {
-        if(edentity[i].t==9) numtrinkets++;
-        if(edentity[i].t==8) numcoins++;
-        if(edentity[i].t==15) numcrewmates++;
-    }
+numtrinkets=0;
+numcoins=0;
+numcrewmates=0;
+for(size_t i=0; i<edentity.size(); i++)
+{
+if(edentity[i].t==9) numtrinkets++;
+if(edentity[i].t==8) numcoins++;
+if(edentity[i].t==15) numcrewmates++;
+}
 }
 
 // Switches tileset
 void editorclass::switch_tileset(bool reversed) {
-    std::string tilesets[6] =
-        {"Space Station", "Outside", "Lab", "Warp Zone", "Ship", "Tower"};
-    int tiles = level[levx + levy*maxwidth].tileset;
-    int oldtiles = tiles;
-    if (reversed)
-        tiles--;
-    else
-        tiles++;
+std::string tilesets[6] =
+{"Space Station", "Outside", "Lab", "Warp Zone", "Ship", "Tower"};
+int tiles = level[levx + levy*maxwidth].tileset;
+int oldtiles = tiles;
+if (reversed)
+tiles--;
+else
+tiles++;
 
-    tiles = mod(tiles, 6);
-    level[levx + levy*maxwidth].tileset = tiles;
-    int newtiles = tiles;
+tiles = mod(tiles, 6);
+level[levx + levy*maxwidth].tileset = tiles;
+int newtiles = tiles;
 
-    clamp_tilecol(levx, levy, false);
+clamp_tilecol(levx, levy, false);
 
-    switch_tileset_tiles(oldtiles, newtiles);
-    notedelay = 45;
-    ed.note = "Now using "+tilesets[tiles]+" Tileset";
-    updatetiles = true;
+switch_tileset_tiles(oldtiles, newtiles);
+notedelay = 45;
+ed.note = "Now using "+tilesets[tiles]+" Tileset";
+updatetiles = true;
 }
 
 // Gracefully switches to and from Tower Tileset if autotilig is on
 void editorclass::switch_tileset_tiles(int from, int to) {
-    // Do nothing in Direct Mode
-    if (level[levx + levy*maxwidth].directmode)
-        return;
+// Do nothing in Direct Mode
+if (level[levx + levy*maxwidth].directmode)
+return;
 
-    // Otherwise, set tiles naively to one of the correct type.
-    // Autotiling will fix them automatically later.
-    int tile;
-    enum tiletyp typ;
-    int newfg = 80;
-    int newbg = 680;
-    int newspike = 6;
+// Otherwise, set tiles naively to one of the correct type.
+// Autotiling will fix them automatically later.
+int tile;
+enum tiletyp typ;
+int newfg = 80;
+int newbg = 680;
+int newspike = 6;
 
-    if (to == 5) {
-        newfg = 12;
-        newbg = 28;
-    }
+if (to == 5) {
+newfg = 12;
+newbg = 28;
+}
 
-    for (int x = 0; x < 40; x++) {
-        for (int y = 0; y < 30; y++) {
-            tile = gettilelocal(x, y);
-            typ = gettiletyp(from, tile);
-            if (typ == TILE_FOREGROUND)
-                settilelocal(x, y, newfg);
-            else if (typ == TILE_BACKGROUND)
-                settilelocal(x, y, newbg);
-            else if (typ == TILE_SPIKE)
-                settilelocal(x, y, newspike);
-        }
-    }
+for (int x = 0; x < 40; x++) {
+for (int y = 0; y < 30; y++) {
+	tile = gettilelocal(x, y);
+	typ = gettiletyp(from, tile);
+	if (typ == TILE_FOREGROUND)
+		settilelocal(x, y, newfg);
+	else if (typ == TILE_BACKGROUND)
+		settilelocal(x, y, newbg);
+	else if (typ == TILE_SPIKE)
+		settilelocal(x, y, newspike);
+}
+}
 }
 
 // Switches tileset color
 void editorclass::switch_tilecol(bool reversed) {
-    if (reversed)
-        level[levx + levy*maxwidth].tilecol--;
-    else
-        level[levx + levy*maxwidth].tilecol++;
+if (reversed)
+level[levx + levy*maxwidth].tilecol--;
+else
+level[levx + levy*maxwidth].tilecol++;
 
-    clamp_tilecol(levx, levy, true);
+clamp_tilecol(levx, levy, true);
 
-    notedelay = 45;
-    ed.note = "Tileset Colour Changed";
-    updatetiles = true;
+notedelay = 45;
+ed.note = "Tileset Colour Changed";
+updatetiles = true;
 }
 
 void editorclass::clamp_tilecol(int levx, int levy, bool wrap) {
-    int tileset = level[levx + levy*maxwidth].tileset;
-    int tilecol = level[levx + levy*maxwidth].tilecol;
+int tileset = level[levx + levy*maxwidth].tileset;
+int tilecol = level[levx + levy*maxwidth].tilecol;
 
-    int mincol = -1;
-    int maxcol = 5;
+int mincol = -1;
+int maxcol = 5;
 
-    // Only Space Station allows tileset -1
-    if (tileset != 0)
-        mincol = 0;
+// Only Space Station allows tileset -1
+if (tileset != 0)
+mincol = 0;
 
-    if (tileset == 0)
-        maxcol = 31;
-    else if (tileset == 1)
-        maxcol = 7;
-    else if (tileset == 3)
-        maxcol = 6;
-    else if (tileset == 5)
-        maxcol = 29;
+if (tileset == 0)
+maxcol = 31;
+else if (tileset == 1)
+maxcol = 7;
+else if (tileset == 3)
+maxcol = 6;
+else if (tileset == 5)
+maxcol = 29;
 
-    // If wrap is true, wrap-around, otherwise just cap
-    if (tilecol > maxcol)
-        tilecol = (wrap ? mincol : maxcol);
-    if (tilecol < mincol)
-        tilecol = (wrap ? maxcol : mincol);
-    level[levx + levy*maxwidth].tilecol = tilecol;
+// If wrap is true, wrap-around, otherwise just cap
+if (tilecol > maxcol)
+tilecol = (wrap ? mincol : maxcol);
+if (tilecol < mincol)
+tilecol = (wrap ? maxcol : mincol);
+level[levx + levy*maxwidth].tilecol = tilecol;
 }
 
 // Performs tasks needed when enabling Tower Mode
 void editorclass::enable_tower(void) {
-    int room = levx + levy*maxwidth;
+int room = levx + levy*maxwidth;
 
-    // Set Tower Tileset and color 0
-    switch_tileset_tiles(level[room].tileset, 5);
-    level[room].tileset = 5;
-    level[room].tilecol = 0;
+// Set Tower Tileset and color 0
+switch_tileset_tiles(level[room].tileset, 5);
+level[room].tileset = 5;
+level[room].tilecol = 0;
 
-    /* Place the player at the level's tower destination.
-       Defaults to zero, but might be something else if we've
-       had tower mode enabled in this room previously. */
-    ypos = level[room].tower_row;
+/* Place the player at the level's tower destination.
+Defaults to zero, but might be something else if we've
+had tower mode enabled in this room previously. */
+ypos = level[room].tower_row;
 
-    // If we have an adjacant tower room, reuse its tower
-    int rx = levx;
-    int ry = levy;
-    int tower = 0;
-    if (get_tower(rx, ry - 1))
-        tower = get_tower(rx, ry - 1);
-    else if (get_tower(rx, ry + 1))
-        tower = get_tower(rx, ry + 1);
+// If we have an adjacant tower room, reuse its tower
+int rx = levx;
+int ry = levy;
+int tower = 0;
+if (get_tower(rx, ry - 1))
+tower = get_tower(rx, ry - 1);
+else if (get_tower(rx, ry + 1))
+tower = get_tower(rx, ry + 1);
 
-    if (!tower) {
-        // Find an unused tower ID
-        int i;
-        bool unused = false;
-        for (i = 1; i <= maxwidth * maxheight; i++) {
-            unused = true;
+if (!tower) {
+// Find an unused tower ID
+int i;
+bool unused = false;
+for (i = 1; i <= maxwidth * maxheight; i++) {
+	unused = true;
 
-            for (rx = 0; rx < maxwidth && unused; rx++)
-                for (ry = 0; ry < maxheight && unused; ry++)
-                    if (get_tower(rx, ry) == i)
-                        unused = false;
+	for (rx = 0; rx < maxwidth && unused; rx++)
+		for (ry = 0; ry < maxheight && unused; ry++)
+			if (get_tower(rx, ry) == i)
+				unused = false;
 
-            if (unused)
-                break;
-        }
+	if (unused)
+		break;
+}
 
-        tower = i;
-    }
+tower = i;
+}
 
-    level[room].tower = tower;
-    snap_tower_entry(levx, levy);
+level[room].tower = tower;
+snap_tower_entry(levx, levy);
 }
 
 // Move tower entry and editor position within tower boundaries
 void editorclass::snap_tower_entry(int rx, int ry) {
-    int tower = get_tower(rx, ry);
-    int size = tower_size(tower);
+int tower = get_tower(rx, ry);
+int size = tower_size(tower);
 
-    // Snap editor position to the whole tower bottom or top with a 10 offset
-    if (ypos > size - 20)
-        ypos = size - 20;
+// Snap editor position to the whole tower bottom or top with a 10 offset
+if (ypos > size - 20)
+ypos = size - 20;
 
-    if (ypos < -10)
-        ypos = -10;
+if (ypos < -10)
+ypos = -10;
 
-    // Snap entry row to the bottom row.
-    // Useful to avoid using the room as exit point.
-    if (level[rx + ry*maxwidth].tower_row >= size)
-        level[rx + ry*maxwidth].tower_row = size - 1;
+// Snap entry row to the bottom row.
+// Useful to avoid using the room as exit point.
+if (level[rx + ry*maxwidth].tower_row >= size)
+level[rx + ry*maxwidth].tower_row = size - 1;
 }
 
 // Enlarge a tower, downwards to y or shifting down if y is negative
 void editorclass::upsize_tower(int tower, int y)
 {
-    if (!y || !tower)
-        return;
+if (!y || !tower)
+return;
 
-    // Check if we actually need to upsize it
-    if (y > 0 && towers[tower-1].size > y)
-        return;
+// Check if we actually need to upsize it
+if (y > 0 && towers[tower-1].size > y)
+return;
 
-    if (y > 0) {
-        towers[tower-1].size = y + 1;
-        resize_tower_tiles(tower);
-        return;
-    }
+if (y > 0) {
+towers[tower-1].size = y + 1;
+resize_tower_tiles(tower);
+return;
+}
 
-    towers[tower-1].size = towers[tower-1].size - y;
-    resize_tower_tiles(tower);
-    shift_tower(tower, -y);
+towers[tower-1].size = towers[tower-1].size - y;
+resize_tower_tiles(tower);
+shift_tower(tower, -y);
 }
 
 // Remove vertical edges lacking tiles (down to a minimum of 40)
 void editorclass::downsize_tower(int tower) {
-    if (!tower)
-        return;
+if (!tower)
+return;
 
-    int ty, by, size;
-    size = tower_size(tower);
+int ty, by, size;
+size = tower_size(tower);
 
-    // Check unused topmost edges
-    for (ty = 0; ty < size * 40; ty++)
-        if (towers[tower-1].tiles[ty] != 0)
-            break;
-    ty /= 40;
+// Check unused topmost edges
+for (ty = 0; ty < size * 40; ty++)
+if (towers[tower-1].tiles[ty] != 0)
+	break;
+ty /= 40;
 
-    // Don't resize below 40
-    if (ty > (size - 40))
-        ty = size - 40;
-    if (ty > 0) {
-        shift_tower(tower, -ty);
-        towers[tower-1].size -= ty;
-        resize_tower_tiles(tower);
-    }
+// Don't resize below 40
+if (ty > (size - 40))
+ty = size - 40;
+if (ty > 0) {
+shift_tower(tower, -ty);
+towers[tower-1].size -= ty;
+resize_tower_tiles(tower);
+}
 
-    // Check unused bottom edges
-    size = tower_size(tower);
-    for (by = size * 40 - 1; by; by--)
-        if (towers[tower-1].tiles[by] != 0)
-            break;
-    by = size * 40 - 1 - by;
-    by /= 40;
+// Check unused bottom edges
+size = tower_size(tower);
+for (by = size * 40 - 1; by; by--)
+if (towers[tower-1].tiles[by] != 0)
+	break;
+by = size * 40 - 1 - by;
+by /= 40;
 
-    if (by > (size - 40))
-        by = size - 40;
-    if (by > 0) {
-        towers[tower-1].size -= by;
-        resize_tower_tiles(tower);
-    }
+if (by > (size - 40))
+by = size - 40;
+if (by > 0) {
+towers[tower-1].size -= by;
+resize_tower_tiles(tower);
+}
 }
 
 // Resizes the tower tile size. If enlarged, zerofill the new tiles
 void editorclass::resize_tower_tiles(int tower) {
-    if (!tower)
-        return;
+if (!tower)
+return;
 
-    int oldsize = towers[tower-1].tiles.size() / 40 + 1;
-    int newsize = tower_size(tower);
-    towers[tower-1].tiles.resize(40 * newsize);
+int oldsize = towers[tower-1].tiles.size() / 40 + 1;
+int newsize = tower_size(tower);
+towers[tower-1].tiles.resize(40 * newsize);
 
-    // Zerofill new rows
-    for (; oldsize < newsize; oldsize++)
-        for (int x = 0; x < 40; x++)
-            towers[tower-1].tiles[x + oldsize*40] = 0;
+// Zerofill new rows
+for (; oldsize < newsize; oldsize++)
+for (int x = 0; x < 40; x++)
+	towers[tower-1].tiles[x + oldsize*40] = 0;
 }
 
 // Shift tower downwards (positive y) or upwards (negative y).
 // Also shifts tower entry position
 void editorclass::shift_tower(int tower, int y) {
-    if (!tower || !y)
-        return;
+if (!tower || !y)
+return;
 
-    int x, ny, size;
-    size = tower_size(tower);
+int x, ny, size;
+size = tower_size(tower);
 
-    // Shift entry points
-    for (int rx = 0; rx < maxwidth; rx++) {
-        for (int ry = 0; ry < maxheight; ry++) {
-            if (tower == get_tower(rx, ry)) {
-                level[rx + ry*maxwidth].tower_row += y;
-                if (level[rx + ry*maxwidth].tower_row < 0)
-                    level[rx + ry*maxwidth].tower_row = 0;
-                if (level[rx + ry*maxwidth].tower_row >= size)
-                    level[rx + ry*maxwidth].tower_row = size - 1;
-            }
-        }
-    }
+// Shift entry points
+for (int rx = 0; rx < maxwidth; rx++) {
+for (int ry = 0; ry < maxheight; ry++) {
+	if (tower == get_tower(rx, ry)) {
+		level[rx + ry*maxwidth].tower_row += y;
+		if (level[rx + ry*maxwidth].tower_row < 0)
+			level[rx + ry*maxwidth].tower_row = 0;
+		if (level[rx + ry*maxwidth].tower_row >= size)
+			level[rx + ry*maxwidth].tower_row = size - 1;
+	}
+}
+}
 
-    // Shift entities
-    for (size_t i = 0; i < edentity.size(); i++) {
-        if (tower == edentity[i].intower)
-            edentity[i].y += y;
-        if (edentity[i].t == 13 && tower == edentity[i].p3)
-            edentity[i].p2 += y;
-    }
+// Shift entities
+for (size_t i = 0; i < edentity.size(); i++) {
+if (tower == edentity[i].intower)
+	edentity[i].y += y;
+if (edentity[i].t == 13 && tower == edentity[i].p3)
+	edentity[i].p2 += y;
+}
 
-    // Shift editor scroll position
-    ypos += y;
+// Shift editor scroll position
+ypos += y;
 
-    // Shift tower downwards
-    if (y > 0) {
-        for (ny = size - 1; ny >= 0; ny--) {
-            for (x = 0; x < 40; x++) {
-                if (ny >= y)
-                    towers[tower-1].tiles[x + ny*40] =
-                        towers[tower-1].tiles[x + (ny - y)*40];
-                else
-                    towers[tower-1].tiles[x + ny*40] = 0;
-            }
-        }
+// Shift tower downwards
+if (y > 0) {
+for (ny = size - 1; ny >= 0; ny--) {
+	for (x = 0; x < 40; x++) {
+		if (ny >= y)
+			towers[tower-1].tiles[x + ny*40] =
+				towers[tower-1].tiles[x + (ny - y)*40];
+		else
+			towers[tower-1].tiles[x + ny*40] = 0;
+	}
+}
 
-        return;
-    }
+return;
+}
 
-    // Shift tower upwards
-    for (ny = 0; ny < size + y; ny++)
-        for (x = 0; x < 40; x++)
-            towers[tower-1].tiles[x + ny*40] =
-                towers[tower-1].tiles[x + (ny - y)*40];
+// Shift tower upwards
+for (ny = 0; ny < size + y; ny++)
+for (x = 0; x < 40; x++)
+	towers[tower-1].tiles[x + ny*40] =
+		towers[tower-1].tiles[x + (ny - y)*40];
 }
 
 // Returns the tower of the given room
 int editorclass::get_tower(int rx, int ry) {
-    int room = rx + ry * maxwidth;
-    if (ry < 0 || rx < 0 || rx >= maxwidth || ry >= maxheight)
-        return 0;
+int room = rx + ry * maxwidth;
+if (ry < 0 || rx < 0 || rx >= maxwidth || ry >= maxheight)
+return 0;
 
-    return level[room].tower;
+return level[room].tower;
 }
 
 // Finds the tower in the level and sets rx/ry to it
 bool editorclass::find_tower(int tower, int &rx, int &ry) {
-    for (rx = 0; rx < maxwidth; rx++)
-        for (ry = 0; ry < maxheight; ry++)
-            if (tower == get_tower(rx, ry))
-                return true;
-    return false;
+for (rx = 0; rx < maxwidth; rx++)
+for (ry = 0; ry < maxheight; ry++)
+	if (tower == get_tower(rx, ry))
+		return true;
+return false;
 }
 
 int editorclass::tower_size(int tower) {
-    if (!tower)
-        return 0;
+if (!tower)
+return 0;
 
-    return towers[tower-1].size;
+return towers[tower-1].size;
 }
 int editorclass::tower_scroll(int tower) {
-    return towers[tower-1].scroll;
+return towers[tower-1].scroll;
 }
 
 bool editorclass::intower(void) {
-    return !!get_tower(levx, levy);
+return !!get_tower(levx, levy);
 }
 
 int editorclass::tower_row(int rx, int ry) {
-    int tower = get_tower(rx, ry);
-    if (!tower)
-        return -1;
+int tower = get_tower(rx, ry);
+if (!tower)
+return -1;
 
-    int room = rx + ry * maxwidth;
-    return level[room].tower_row;
+int room = rx + ry * maxwidth;
+return level[room].tower_row;
 }
 
 void editorclass::load(std::string& _path)
 {
-    reset();
-    map.teleporters.clear();
-    ed.customtrials.clear();
-    dimensions.clear();
-
-    static const char *levelDir = "levels/";
-    if (_path.compare(0, strlen(levelDir), levelDir) != 0)
-    {
-        _path = levelDir + _path;
-    }
-
-    char** path = PHYSFS_getSearchPath();
-    char** i = path;
-    int len = 0;
-    while (*i != nullptr) {
-        i++;
-        len++;
-    }
-
-    //printf("Unmounting %s\n", graphics.assetdir.c_str());
-    //PHYSFS_unmount(graphics.assetdir.c_str());
-    //graphics.assetdir = "";
-    //graphics.reloadresources();
-
-    FILESYSTEM_unmountassets();
-
-    std::string zippath = "levels/" + _path.substr(7,_path.size()-14) + ".data.zip";
-    std::string dirpath = "levels/" + _path.substr(7,_path.size()-14) + "/";
-    std::string zip_path;
-    const char* cstr = PHYSFS_getRealDir(_path.c_str());
-    if (cstr) zip_path = cstr;
-    if (cstr && FILESYSTEM_directoryExists(zippath.c_str())) {
-        if (!game.quiet) printf("Custom asset directory exists at %s\n",zippath.c_str());
-        FILESYSTEM_mount(zippath.c_str());
-        graphics.reloadresources();
-        music.init();
-    } else if (zip_path != "data.zip" && !endsWith(zip_path, "/data.zip") && endsWith(zip_path, ".zip")) {
-        printf("Custom asset directory is .zip at %s\n", zip_path.c_str());
-        PHYSFS_File* zip = PHYSFS_openRead(zip_path.c_str());
-        zip_path += ".data.zip";
-        if (zip == nullptr) {
-            printf("error loading .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-        } else if (PHYSFS_mountHandle(zip, zip_path.c_str(), "/", 0) == 0) {
-            printf("error mounting .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-        } else {
-            graphics.assetdir = zip_path;
-        }
-        graphics.reloadresources();
-    } else if (FILESYSTEM_directoryExists(dirpath.c_str())) {
-        if (!game.quiet) printf("Custom asset directory exists at %s\n",dirpath.c_str());
-        FILESYSTEM_mount(dirpath.c_str());
-        graphics.reloadresources();
-    } else if (!game.quiet) {
-        printf("Custom asset directory does not exist\n");
-    }
-
-    TiXmlDocument doc;
-    if (!FILESYSTEM_loadTiXmlDocument(_path.c_str(), &doc))
-    {
-        printf("No level %s to load :(\n", _path.c_str());
-        return;
-    }
-
-
-    TiXmlHandle hDoc(&doc);
-    TiXmlElement* pElem;
-    TiXmlHandle hRoot(0);
-    version = 0;
-
-    {
-        pElem=hDoc.FirstChildElement().Element();
-        // should always have a valid root but handle gracefully if it does
-        if (!pElem)
-        {
-            printf("No valid root! Corrupt level file?\n");
-        }
-
-        pElem->QueryIntAttribute("version", &version);
-        if (pElem->Attribute("vceversion"))
-            pElem->QueryIntAttribute("vceversion", &vceversion);
-        else
-            vceversion = 0;
-        // save this for later
-        hRoot=TiXmlHandle(pElem);
-    }
-
-    for( pElem = hRoot.FirstChild( "Data" ).FirstChild().Element(); pElem; pElem=pElem->NextSiblingElement())
-    {
-        std::string pKey(pElem->Value());
-        const char* pText = pElem->GetText() ;
-        if(pText == NULL)
-        {
-            pText = "";
-        }
-
-        if (pKey == "MetaData")
-        {
-
-            for( TiXmlElement* subElem = pElem->FirstChildElement(); subElem; subElem= subElem->NextSiblingElement())
-            {
-                std::string pKey(subElem->Value());
-                const char* pText = subElem->GetText() ;
-                if(pText == NULL)
-                {
-                    pText = "";
-                }
-
-                if(pKey == "Creator")
-                {
-                    EditorData::GetInstance().creator = pText;
-                }
-
-                if(pKey == "Title")
-                {
-                    EditorData::GetInstance().title = pText;
-                }
-
-                if(pKey == "Desc1")
-                {
-                    Desc1 = pText;
-                }
-
-                if(pKey == "Desc2")
-                {
-                    Desc2 = pText;
-                }
-
-                if(pKey == "Desc3")
-                {
-                    Desc3 = pText;
-                }
-
-                if(pKey == "website")
-                {
-                    website = pText;
-                }
-            }
-        }
-
-        if (pKey == "mapwidth")
-        {
-            mapwidth = atoi(pText);
-        }
-        if (pKey == "mapheight")
-        {
-            mapheight = atoi(pText);
-        }
-        if (pKey == "levmusic")
-        {
-            levmusic = atoi(pText);
-        }
-
-        if (pKey == "dimensions")
-        {
-            for (TiXmlElement* dimensionEl = pElem->FirstChildElement(); dimensionEl; dimensionEl = dimensionEl->NextSiblingElement()) {
-                Dimension dim;
-                dimensionEl->QueryIntAttribute("x", &dim.x);
-                dimensionEl->QueryIntAttribute("y", &dim.y);
-                dimensionEl->QueryIntAttribute("w", &dim.w);
-                dimensionEl->QueryIntAttribute("h", &dim.h);
-
-                if (dim.w <= 0 || dim.h <= 0)
-                    continue;
-
-                const char* pText = dimensionEl->GetText();
-                if (pText == NULL)
-                    pText = "";
-                std::string TextString = pText;
-                if (TextString.length())
-                    dim.name = TextString;
-
-                dimensions.push_back(dim);
-            }
-        }
-
-        if (pKey == "timetrials")
-        {
-            for( TiXmlElement* trialEl = pElem->FirstChildElement(); trialEl; trialEl=trialEl->NextSiblingElement())
-            {
-                customtrial temp;
-                trialEl->QueryIntAttribute("roomx",    &temp.roomx    );
-                trialEl->QueryIntAttribute("roomy",    &temp.roomy    );
-                trialEl->QueryIntAttribute("startx",   &temp.startx   );
-                trialEl->QueryIntAttribute("starty",   &temp.starty   );
-                trialEl->QueryIntAttribute("startf",   &temp.startf   );
-                trialEl->QueryIntAttribute("par",      &temp.par      );
-                trialEl->QueryIntAttribute("trinkets", &temp.trinkets );
-                trialEl->QueryIntAttribute("music",    &temp.music );
-                if(trialEl->GetText() != NULL)
-                {
-                    temp.name = std::string(trialEl->GetText()) ;
-                } else {
-                    temp.name = "???";
-                }
-                ed.customtrials.push_back(temp);
-
-            }
-
-        }
-
-
-        if (pKey == "contents")
-        {
-            std::string TextString = (pText);
-            if(TextString.length())
-            {
-                growing_vector<std::string> values = split(TextString,',');
-                //contents.clear();
-                for(size_t i = 0; i < contents.size(); i++)
-                {
-                    contents[i] =0;
-                }
-                int x =0;
-                int y =0;
-                for(size_t i = 0; i < values.size(); i++)
-                {
-                    contents[x + (maxwidth*40*y)] = atoi(values[i].c_str());
-                    x++;
-                    if(x == mapwidth*40)
-                    {
-                        x=0;
-                        y++;
-                    }
-
-                }
-            }
-        }
-
-        if (pKey == "altstates") {
-            int i = 0;
-            for (TiXmlElement* edAltstateEl = pElem->FirstChildElement(); edAltstateEl; edAltstateEl = edAltstateEl->NextSiblingElement()) {
-                std::string pKey(edAltstateEl->Value());
-                const char* pText = edAltstateEl->GetText();
-
-                if (pText == NULL)
-                    pText = "";
-
-                std::string TextString = pText;
-
-                if (TextString.length()) {
-                    edAltstateEl->QueryIntAttribute("x", &altstates[i].x);
-                    edAltstateEl->QueryIntAttribute("y", &altstates[i].y);
-                    edAltstateEl->QueryIntAttribute("state", &altstates[i].state);
-
-                    growing_vector<std::string> values = split(TextString, ',');
-
-                    for (size_t t = 0; t < values.size(); t++)
-                        altstates[i].tiles[t] = atoi(values[t].c_str());
-
-                    i++;
-                }
-            }
-        }
-
-        if (pKey == "towers") {
-            int i = 0;
-            for (TiXmlElement *edTowerEl = pElem->FirstChildElement();
-                 edTowerEl; edTowerEl = edTowerEl->NextSiblingElement()) {
-                std::string pKey(edTowerEl->Value());
-                const char* pText = edTowerEl->GetText();
-
-                if (pText == NULL)
-                    pText = "";
-
-                std::string TextString = pText;
-
-                if (TextString.length()) {
-                    edTowerEl->QueryIntAttribute("size", &towers[i].size);
-                    edTowerEl->QueryIntAttribute("scroll", &towers[i].scroll);
-
-                    growing_vector<std::string> values = split(TextString, ',');
-
-                    for (size_t t = 0; t < values.size(); t++)
-                        towers[i].tiles[t] = atoi(values[t].c_str());
-
-                    i++;
-                }
-            }
-        }
-
-        /*else if(version==1){
-          if (pKey == "contents")
-          {
-            std::string TextString = (pText);
-            if(TextString.length())
-            {
-              growing_vector<std::string> values = split(TextString,',');
-              contents.clear();
-              for(int i = 0; i < values.size(); i++)
-              {
-                contents.push_back(atoi(values[i].c_str()));
-              }
-            }
-          }
-        //}
-        */
-
-        if (pKey == "teleporters")
-        {
-            for( TiXmlElement* teleporterEl = pElem->FirstChildElement(); teleporterEl; teleporterEl=teleporterEl->NextSiblingElement())
-            {
-                point temp;
-                teleporterEl->QueryIntAttribute("x", &temp.x);
-                teleporterEl->QueryIntAttribute("y", &temp.y);
-
-                map.setteleporter(temp.x,temp.y);
-
-            }
-
-        }
-
-        if (pKey == "edEntities")
-        {
-            for( TiXmlElement* edEntityEl = pElem->FirstChildElement(); edEntityEl; edEntityEl=edEntityEl->NextSiblingElement())
-            {
-                edentities entity;
-
-                std::string pKey(edEntityEl->Value());
-                if (edEntityEl->GetText() != NULL)
-                {
-                    entity.scriptname = std::string(edEntityEl->GetText());
-                }
-
-                if (edEntityEl->Attribute("activityname")) {
-                    entity.activityname = edEntityEl->Attribute("activityname");
-                } else {
-                    entity.activityname = "";
-                }
-
-                if (edEntityEl->Attribute("activitycolor")) {
-                    entity.activitycolor = edEntityEl->Attribute("activitycolor");
-                } else {
-                    entity.activitycolor = "";
-                }
-
-                edEntityEl->QueryIntAttribute("x", &entity.x);
-                edEntityEl->QueryIntAttribute("y", &entity.y);
-                edEntityEl->QueryIntAttribute("subx", &entity.subx);
-                edEntityEl->QueryIntAttribute("suby", &entity.suby);
-                edEntityEl->QueryIntAttribute("t", &entity.t);
-
-                edEntityEl->QueryIntAttribute("p1", &entity.p1);
-                edEntityEl->QueryIntAttribute("p2", &entity.p2);
-                edEntityEl->QueryIntAttribute("p3", &entity.p3);
-                edEntityEl->QueryIntAttribute("p4", &entity.p4);
-                edEntityEl->QueryIntAttribute("p5", &entity.p5);
-                edEntityEl->QueryIntAttribute("p6", &entity.p6);
-
-                edEntityEl->QueryIntAttribute("state", &entity.state);
-                edEntityEl->QueryIntAttribute("intower", &entity.intower);
-
-                edEntityEl->QueryIntAttribute("onetime", (int*) &entity.onetime);
-
-                edentity.push_back(entity);
-            }
-        }
-
-        if (pKey == "levelMetaData")
-        {
-            int i = 0;
-            int rowwidth = 0;
-            int maxrowwidth = std::max(mapwidth, 20);
-            for( TiXmlElement* edLevelClassElement = pElem->FirstChildElement(); edLevelClassElement; edLevelClassElement=edLevelClassElement->NextSiblingElement())
-            {
-                std::string pKey(edLevelClassElement->Value());
-                if(edLevelClassElement->GetText() != NULL)
-                {
-                    level[i].roomname = std::string(edLevelClassElement->GetText()) ;
-                }
-
-                edLevelClassElement->QueryIntAttribute("tileset", &level[i].tileset);
-                edLevelClassElement->QueryIntAttribute("tilecol", &level[i].tilecol);
-                edLevelClassElement->QueryIntAttribute("customtileset", &level[i].customtileset);
-                edLevelClassElement->QueryIntAttribute("customspritesheet", &level[i].customspritesheet);
-                edLevelClassElement->QueryIntAttribute("platx1", &level[i].platx1);
-                edLevelClassElement->QueryIntAttribute("platy1", &level[i].platy1);
-                edLevelClassElement->QueryIntAttribute("platx2", &level[i].platx2);
-                edLevelClassElement->QueryIntAttribute("platy2", &level[i].platy2);
-                edLevelClassElement->QueryIntAttribute("platv", &level[i].platv);
-                if (edLevelClassElement->Attribute("enemyv")) {
-                    edLevelClassElement->QueryIntAttribute("enemyv", &level[i].enemyv);
-                } else {
-                    level[i].enemyv = 4;
-                }
-                edLevelClassElement->QueryIntAttribute("enemyx1", &level[i].enemyx1);
-                edLevelClassElement->QueryIntAttribute("enemyy1", &level[i].enemyy1);
-                edLevelClassElement->QueryIntAttribute("enemyx2", &level[i].enemyx2);
-                edLevelClassElement->QueryIntAttribute("enemyy2", &level[i].enemyy2);
-                edLevelClassElement->QueryIntAttribute("enemytype", &level[i].enemytype);
-                edLevelClassElement->QueryIntAttribute("directmode", &level[i].directmode);
-                edLevelClassElement->QueryIntAttribute("tower", &level[i].tower);
-                edLevelClassElement->QueryIntAttribute("tower_row", &level[i].tower_row);
-                edLevelClassElement->QueryIntAttribute("warpdir", &level[i].warpdir);
-
-                i++;
-
-                rowwidth++;
-                if (rowwidth == maxrowwidth) {
-                    rowwidth = 0;
-                    i += maxwidth - maxrowwidth;
-                }
-            }
-        }
-
-        if (pKey == "script")
-        {
-            std::string TextString = (pText);
-            if(TextString.length())
-            {
-                growing_vector<std::string> values = split(TextString,'|');
-                script.clearcustom();
-                for(size_t i = 0; i < values.size(); i++)
-                {
-                    script.customscript.push_back(values[i]);
-                }
-
-            }
-        }
-
-    }
-
-    gethooks();
-    countstuff();
-    version=2;
-    //saveconvertor();
+reset();
+map.teleporters.clear();
+ed.customtrials.clear();
+dimensions.clear();
+
+static const char *levelDir = "levels/";
+if (_path.compare(0, strlen(levelDir), levelDir) != 0)
+{
+_path = levelDir + _path;
+}
+
+char** path = PHYSFS_getSearchPath();
+char** i = path;
+int len = 0;
+while (*i != nullptr) {
+i++;
+len++;
+}
+
+//printf("Unmounting %s\n", graphics.assetdir.c_str());
+//PHYSFS_unmount(graphics.assetdir.c_str());
+//graphics.assetdir = "";
+//graphics.reloadresources();
+
+FILESYSTEM_unmountassets();
+
+std::string zippath = "levels/" + _path.substr(7,_path.size()-14) + ".data.zip";
+std::string dirpath = "levels/" + _path.substr(7,_path.size()-14) + "/";
+std::string zip_path;
+const char* cstr = PHYSFS_getRealDir(_path.c_str());
+if (cstr) zip_path = cstr;
+if (cstr && FILESYSTEM_directoryExists(zippath.c_str())) {
+if (!game.quiet) printf("Custom asset directory exists at %s\n",zippath.c_str());
+FILESYSTEM_mount(zippath.c_str());
+graphics.reloadresources();
+music.init();
+} else if (zip_path != "data.zip" && !endsWith(zip_path, "/data.zip") && endsWith(zip_path, ".zip")) {
+printf("Custom asset directory is .zip at %s\n", zip_path.c_str());
+PHYSFS_File* zip = PHYSFS_openRead(zip_path.c_str());
+zip_path += ".data.zip";
+if (zip == nullptr) {
+	printf("error loading .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+} else if (PHYSFS_mountHandle(zip, zip_path.c_str(), "/", 0) == 0) {
+	printf("error mounting .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+} else {
+	graphics.assetdir = zip_path;
+}
+graphics.reloadresources();
+} else if (FILESYSTEM_directoryExists(dirpath.c_str())) {
+if (!game.quiet) printf("Custom asset directory exists at %s\n",dirpath.c_str());
+FILESYSTEM_mount(dirpath.c_str());
+graphics.reloadresources();
+} else if (!game.quiet) {
+printf("Custom asset directory does not exist\n");
+}
+
+TiXmlDocument doc;
+if (!FILESYSTEM_loadTiXmlDocument(_path.c_str(), &doc))
+{
+printf("No level %s to load :(\n", _path.c_str());
+return;
+}
+
+
+TiXmlHandle hDoc(&doc);
+TiXmlElement* pElem;
+TiXmlHandle hRoot(0);
+version = 0;
+
+{
+pElem=hDoc.FirstChildElement().Element();
+// should always have a valid root but handle gracefully if it does
+if (!pElem)
+{
+	printf("No valid root! Corrupt level file?\n");
+}
+
+pElem->QueryIntAttribute("version", &version);
+if (pElem->Attribute("vceversion"))
+	pElem->QueryIntAttribute("vceversion", &vceversion);
+else
+	vceversion = 0;
+// save this for later
+hRoot=TiXmlHandle(pElem);
+}
+
+for( pElem = hRoot.FirstChild( "Data" ).FirstChild().Element(); pElem; pElem=pElem->NextSiblingElement())
+{
+std::string pKey(pElem->Value());
+const char* pText = pElem->GetText() ;
+if(pText == NULL)
+{
+	pText = "";
+}
+
+if (pKey == "MetaData")
+{
+
+	for( TiXmlElement* subElem = pElem->FirstChildElement(); subElem; subElem= subElem->NextSiblingElement())
+	{
+		std::string pKey(subElem->Value());
+		const char* pText = subElem->GetText() ;
+		if(pText == NULL)
+		{
+			pText = "";
+		}
+
+		if(pKey == "Creator")
+		{
+			EditorData::GetInstance().creator = pText;
+		}
+
+		if(pKey == "Title")
+		{
+			EditorData::GetInstance().title = pText;
+		}
+
+		if(pKey == "Desc1")
+		{
+			Desc1 = pText;
+		}
+
+		if(pKey == "Desc2")
+		{
+			Desc2 = pText;
+		}
+
+		if(pKey == "Desc3")
+		{
+			Desc3 = pText;
+		}
+
+		if(pKey == "website")
+		{
+			website = pText;
+		}
+	}
+}
+
+if (pKey == "mapwidth")
+{
+	mapwidth = atoi(pText);
+}
+if (pKey == "mapheight")
+{
+	mapheight = atoi(pText);
+}
+if (pKey == "levmusic")
+{
+	levmusic = atoi(pText);
+}
+
+if (pKey == "dimensions")
+{
+	for (TiXmlElement* dimensionEl = pElem->FirstChildElement(); dimensionEl; dimensionEl = dimensionEl->NextSiblingElement()) {
+		Dimension dim;
+		dimensionEl->QueryIntAttribute("x", &dim.x);
+		dimensionEl->QueryIntAttribute("y", &dim.y);
+		dimensionEl->QueryIntAttribute("w", &dim.w);
+		dimensionEl->QueryIntAttribute("h", &dim.h);
+
+		if (dim.w <= 0 || dim.h <= 0)
+			continue;
+
+		const char* pText = dimensionEl->GetText();
+		if (pText == NULL)
+			pText = "";
+		std::string TextString = pText;
+		if (TextString.length())
+			dim.name = TextString;
+
+		dimensions.push_back(dim);
+	}
+}
+
+if (pKey == "timetrials")
+{
+	for( TiXmlElement* trialEl = pElem->FirstChildElement(); trialEl; trialEl=trialEl->NextSiblingElement())
+	{
+		customtrial temp;
+		trialEl->QueryIntAttribute("roomx",    &temp.roomx    );
+		trialEl->QueryIntAttribute("roomy",    &temp.roomy    );
+		trialEl->QueryIntAttribute("startx",   &temp.startx   );
+		trialEl->QueryIntAttribute("starty",   &temp.starty   );
+		trialEl->QueryIntAttribute("startf",   &temp.startf   );
+		trialEl->QueryIntAttribute("par",      &temp.par      );
+		trialEl->QueryIntAttribute("trinkets", &temp.trinkets );
+		trialEl->QueryIntAttribute("music",    &temp.music );
+		if(trialEl->GetText() != NULL)
+		{
+			temp.name = std::string(trialEl->GetText()) ;
+		} else {
+			temp.name = "???";
+		}
+		ed.customtrials.push_back(temp);
+
+	}
+
+}
+
+
+if (pKey == "contents")
+{
+	std::string TextString = (pText);
+	if(TextString.length())
+	{
+		growing_vector<std::string> values = split(TextString,',');
+		//contents.clear();
+		for(size_t i = 0; i < contents.size(); i++)
+		{
+			contents[i] =0;
+		}
+		int x =0;
+		int y =0;
+		for(size_t i = 0; i < values.size(); i++)
+		{
+			contents[x + (maxwidth*40*y)] = atoi(values[i].c_str());
+			x++;
+			if(x == mapwidth*40)
+			{
+				x=0;
+				y++;
+			}
+
+		}
+	}
+}
+
+if (pKey == "altstates") {
+	int i = 0;
+	for (TiXmlElement* edAltstateEl = pElem->FirstChildElement(); edAltstateEl; edAltstateEl = edAltstateEl->NextSiblingElement()) {
+		std::string pKey(edAltstateEl->Value());
+		const char* pText = edAltstateEl->GetText();
+
+		if (pText == NULL)
+			pText = "";
+
+		std::string TextString = pText;
+
+		if (TextString.length()) {
+			edAltstateEl->QueryIntAttribute("x", &altstates[i].x);
+			edAltstateEl->QueryIntAttribute("y", &altstates[i].y);
+			edAltstateEl->QueryIntAttribute("state", &altstates[i].state);
+
+			growing_vector<std::string> values = split(TextString, ',');
+
+			for (size_t t = 0; t < values.size(); t++)
+				altstates[i].tiles[t] = atoi(values[t].c_str());
+
+			i++;
+		}
+	}
+}
+
+if (pKey == "towers") {
+	int i = 0;
+	for (TiXmlElement *edTowerEl = pElem->FirstChildElement();
+		 edTowerEl; edTowerEl = edTowerEl->NextSiblingElement()) {
+		std::string pKey(edTowerEl->Value());
+		const char* pText = edTowerEl->GetText();
+
+		if (pText == NULL)
+			pText = "";
+
+		std::string TextString = pText;
+
+		if (TextString.length()) {
+			edTowerEl->QueryIntAttribute("size", &towers[i].size);
+			edTowerEl->QueryIntAttribute("scroll", &towers[i].scroll);
+
+			growing_vector<std::string> values = split(TextString, ',');
+
+			for (size_t t = 0; t < values.size(); t++)
+				towers[i].tiles[t] = atoi(values[t].c_str());
+
+			i++;
+		}
+	}
+}
+
+/*else if(version==1){
+  if (pKey == "contents")
+  {
+	std::string TextString = (pText);
+	if(TextString.length())
+	{
+	  growing_vector<std::string> values = split(TextString,',');
+	  contents.clear();
+	  for(int i = 0; i < values.size(); i++)
+	  {
+		contents.push_back(atoi(values[i].c_str()));
+	  }
+	}
+  }
+//}
+*/
+
+if (pKey == "teleporters")
+{
+	for( TiXmlElement* teleporterEl = pElem->FirstChildElement(); teleporterEl; teleporterEl=teleporterEl->NextSiblingElement())
+	{
+		point temp;
+		teleporterEl->QueryIntAttribute("x", &temp.x);
+		teleporterEl->QueryIntAttribute("y", &temp.y);
+
+		map.setteleporter(temp.x,temp.y);
+
+	}
+
+}
+
+if (pKey == "edEntities")
+{
+	for( TiXmlElement* edEntityEl = pElem->FirstChildElement(); edEntityEl; edEntityEl=edEntityEl->NextSiblingElement())
+	{
+		edentities entity;
+
+		std::string pKey(edEntityEl->Value());
+		if (edEntityEl->GetText() != NULL)
+		{
+			entity.scriptname = std::string(edEntityEl->GetText());
+		}
+
+		if (edEntityEl->Attribute("activityname")) {
+			entity.activityname = edEntityEl->Attribute("activityname");
+		} else {
+			entity.activityname = "";
+		}
+
+		if (edEntityEl->Attribute("activitycolor")) {
+			entity.activitycolor = edEntityEl->Attribute("activitycolor");
+		} else {
+			entity.activitycolor = "";
+		}
+
+		edEntityEl->QueryIntAttribute("x", &entity.x);
+		edEntityEl->QueryIntAttribute("y", &entity.y);
+		edEntityEl->QueryIntAttribute("subx", &entity.subx);
+		edEntityEl->QueryIntAttribute("suby", &entity.suby);
+		edEntityEl->QueryIntAttribute("t", &entity.t);
+
+		edEntityEl->QueryIntAttribute("p1", &entity.p1);
+		edEntityEl->QueryIntAttribute("p2", &entity.p2);
+		edEntityEl->QueryIntAttribute("p3", &entity.p3);
+		edEntityEl->QueryIntAttribute("p4", &entity.p4);
+		edEntityEl->QueryIntAttribute("p5", &entity.p5);
+		edEntityEl->QueryIntAttribute("p6", &entity.p6);
+
+		edEntityEl->QueryIntAttribute("state", &entity.state);
+		edEntityEl->QueryIntAttribute("intower", &entity.intower);
+
+		edEntityEl->QueryIntAttribute("onetime", (int*) &entity.onetime);
+
+		edentity.push_back(entity);
+	}
+}
+
+if (pKey == "levelMetaData")
+{
+	int i = 0;
+	int rowwidth = 0;
+	int maxrowwidth = std::max(mapwidth, 20);
+	for( TiXmlElement* edLevelClassElement = pElem->FirstChildElement(); edLevelClassElement; edLevelClassElement=edLevelClassElement->NextSiblingElement())
+	{
+		std::string pKey(edLevelClassElement->Value());
+		if(edLevelClassElement->GetText() != NULL)
+		{
+			level[i].roomname = std::string(edLevelClassElement->GetText()) ;
+		}
+
+		edLevelClassElement->QueryIntAttribute("tileset", &level[i].tileset);
+		edLevelClassElement->QueryIntAttribute("tilecol", &level[i].tilecol);
+		edLevelClassElement->QueryIntAttribute("customtileset", &level[i].customtileset);
+		edLevelClassElement->QueryIntAttribute("customspritesheet", &level[i].customspritesheet);
+		edLevelClassElement->QueryIntAttribute("platx1", &level[i].platx1);
+		edLevelClassElement->QueryIntAttribute("platy1", &level[i].platy1);
+		edLevelClassElement->QueryIntAttribute("platx2", &level[i].platx2);
+		edLevelClassElement->QueryIntAttribute("platy2", &level[i].platy2);
+		edLevelClassElement->QueryIntAttribute("platv", &level[i].platv);
+		if (edLevelClassElement->Attribute("enemyv")) {
+			edLevelClassElement->QueryIntAttribute("enemyv", &level[i].enemyv);
+		} else {
+			level[i].enemyv = 4;
+		}
+		edLevelClassElement->QueryIntAttribute("enemyx1", &level[i].enemyx1);
+		edLevelClassElement->QueryIntAttribute("enemyy1", &level[i].enemyy1);
+		edLevelClassElement->QueryIntAttribute("enemyx2", &level[i].enemyx2);
+		edLevelClassElement->QueryIntAttribute("enemyy2", &level[i].enemyy2);
+		edLevelClassElement->QueryIntAttribute("enemytype", &level[i].enemytype);
+		edLevelClassElement->QueryIntAttribute("directmode", &level[i].directmode);
+		edLevelClassElement->QueryIntAttribute("tower", &level[i].tower);
+		edLevelClassElement->QueryIntAttribute("tower_row", &level[i].tower_row);
+		edLevelClassElement->QueryIntAttribute("warpdir", &level[i].warpdir);
+
+		i++;
+
+		rowwidth++;
+		if (rowwidth == maxrowwidth) {
+			rowwidth = 0;
+			i += maxwidth - maxrowwidth;
+		}
+	}
+}
+
+if (pKey == "script")
+{
+	std::string TextString = (pText);
+	if(TextString.length())
+	{
+		growing_vector<std::string> values = split(TextString,'|');
+		script.clearcustom();
+		for(size_t i = 0; i < values.size(); i++)
+		{
+			script.customscript.push_back(values[i]);
+		}
+
+	}
+}
+
+}
+
+gethooks();
+countstuff();
+version=2;
+//saveconvertor();
 }
 
 void editorclass::save(std::string& _path)
 {
-    TiXmlDocument doc;
-    TiXmlElement* msg;
-    TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
-    doc.LinkEndChild( decl );
+TiXmlDocument doc;
+TiXmlElement* msg;
+TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
+doc.LinkEndChild( decl );
 
-    TiXmlElement * root = new TiXmlElement( "MapData" );
-    root->SetAttribute("version",version);
-    root->SetAttribute("vceversion",VCEVERSION);
-    doc.LinkEndChild( root );
+TiXmlElement * root = new TiXmlElement( "MapData" );
+root->SetAttribute("version",version);
+root->SetAttribute("vceversion",VCEVERSION);
+doc.LinkEndChild( root );
 
-    TiXmlComment * comment = new TiXmlComment();
-    comment->SetValue(" Save file " );
-    root->LinkEndChild( comment );
+TiXmlComment * comment = new TiXmlComment();
+comment->SetValue(" Save file " );
+root->LinkEndChild( comment );
 
-    TiXmlElement * data = new TiXmlElement( "Data" );
-    root->LinkEndChild( data );
+TiXmlElement * data = new TiXmlElement( "Data" );
+root->LinkEndChild( data );
 
-    msg = new TiXmlElement( "MetaData" );
+msg = new TiXmlElement( "MetaData" );
 
-    time_t rawtime;
-    struct tm * timeinfo;
+time_t rawtime;
+struct tm * timeinfo;
 
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+time ( &rawtime );
+timeinfo = localtime ( &rawtime );
 
-    std::string timeAndDate = asctime (timeinfo);
-    //timeAndDate += dateStr;
+std::string timeAndDate = asctime (timeinfo);
+//timeAndDate += dateStr;
 
-    EditorData::GetInstance().timeModified =  timeAndDate;
-    if(EditorData::GetInstance().timeModified == "")
-    {
-        EditorData::GetInstance().timeCreated =  timeAndDate;
-    }
+EditorData::GetInstance().timeModified =  timeAndDate;
+if(EditorData::GetInstance().timeModified == "")
+{
+EditorData::GetInstance().timeCreated =  timeAndDate;
+}
 
-    //getUser
-    TiXmlElement* meta = new TiXmlElement( "Creator" );
-    meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().creator.c_str() ));
-    msg->LinkEndChild( meta );
+//getUser
+TiXmlElement* meta = new TiXmlElement( "Creator" );
+meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().creator.c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Title" );
-    meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().title.c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Title" );
+meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().title.c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Created" );
-    meta->LinkEndChild( new TiXmlText( help.String(version).c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Created" );
+meta->LinkEndChild( new TiXmlText( help.String(version).c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Modified" );
-    meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().modifier.c_str() ) );
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Modified" );
+meta->LinkEndChild( new TiXmlText( EditorData::GetInstance().modifier.c_str() ) );
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Modifiers" );
-    meta->LinkEndChild( new TiXmlText( help.String(version).c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Modifiers" );
+meta->LinkEndChild( new TiXmlText( help.String(version).c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Desc1" );
-    meta->LinkEndChild( new TiXmlText( Desc1.c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Desc1" );
+meta->LinkEndChild( new TiXmlText( Desc1.c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Desc2" );
-    meta->LinkEndChild( new TiXmlText( Desc2.c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Desc2" );
+meta->LinkEndChild( new TiXmlText( Desc2.c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "Desc3" );
-    meta->LinkEndChild( new TiXmlText( Desc3.c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "Desc3" );
+meta->LinkEndChild( new TiXmlText( Desc3.c_str() ));
+msg->LinkEndChild( meta );
 
-    meta = new TiXmlElement( "website" );
-    meta->LinkEndChild( new TiXmlText( website.c_str() ));
-    msg->LinkEndChild( meta );
+meta = new TiXmlElement( "website" );
+meta->LinkEndChild( new TiXmlText( website.c_str() ));
+msg->LinkEndChild( meta );
 
-    data->LinkEndChild( msg );
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement( "mapwidth" );
-    msg->LinkEndChild( new TiXmlText( help.String(mapwidth).c_str() ));
-    data->LinkEndChild( msg );
+msg = new TiXmlElement( "mapwidth" );
+msg->LinkEndChild( new TiXmlText( help.String(mapwidth).c_str() ));
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement( "mapheight" );
-    msg->LinkEndChild( new TiXmlText( help.String(mapheight).c_str() ));
-    data->LinkEndChild( msg );
+msg = new TiXmlElement( "mapheight" );
+msg->LinkEndChild( new TiXmlText( help.String(mapheight).c_str() ));
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement( "levmusic" );
-    msg->LinkEndChild( new TiXmlText( help.String(levmusic).c_str() ));
-    data->LinkEndChild( msg );
+msg = new TiXmlElement( "levmusic" );
+msg->LinkEndChild( new TiXmlText( help.String(levmusic).c_str() ));
+data->LinkEndChild( msg );
 
-    //New save format
-    std::string contentsString="";
-    for(int y = 0; y < mapheight*30; y++ )
-    {
-        for(int x = 0; x < mapwidth*40; x++ )
-        {
-            contentsString += help.String(contents[x + (maxwidth*40*y)]) + ",";
-        }
-    }
-    msg = new TiXmlElement( "contents" );
-    msg->LinkEndChild( new TiXmlText( contentsString.c_str() ));
-    data->LinkEndChild( msg );
+//New save format
+std::string contentsString="";
+for(int y = 0; y < mapheight*30; y++ )
+{
+for(int x = 0; x < mapwidth*40; x++ )
+{
+	contentsString += help.String(contents[x + (maxwidth*40*y)]) + ",";
+}
+}
+msg = new TiXmlElement( "contents" );
+msg->LinkEndChild( new TiXmlText( contentsString.c_str() ));
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement("altstates");
+msg = new TiXmlElement("altstates");
 
-    // Iterate through all the altstates. Nonexistent altstates are ones at -1,-1
-    TiXmlElement* alt;
-    for (size_t a = 0; a < altstates.size(); a++) {
-        if (altstates[a].x == -1 or altstates[a].y == -1)
-            continue;
+// Iterate through all the altstates. Nonexistent altstates are ones at -1,-1
+TiXmlElement* alt;
+for (size_t a = 0; a < altstates.size(); a++) {
+if (altstates[a].x == -1 or altstates[a].y == -1)
+	continue;
 
-        std::string tiles = "";
-        for (int y = 0; y < 30; y++)
-            for (int x = 0; x < 40; x++)
-                tiles += help.String(altstates[a].tiles[x + y*40]) + ",";
+std::string tiles = "";
+for (int y = 0; y < 30; y++)
+	for (int x = 0; x < 40; x++)
+		tiles += help.String(altstates[a].tiles[x + y*40]) + ",";
 
-        alt = new TiXmlElement("altstate");
-        alt->SetAttribute("x", altstates[a].x);
-        alt->SetAttribute("y", altstates[a].y);
-        alt->SetAttribute("state", altstates[a].state);
-        alt->LinkEndChild(new TiXmlText(tiles.c_str()));
-        msg->LinkEndChild(alt);
-    }
-    data->LinkEndChild(msg);
+alt = new TiXmlElement("altstate");
+alt->SetAttribute("x", altstates[a].x);
+alt->SetAttribute("y", altstates[a].y);
+alt->SetAttribute("state", altstates[a].state);
+alt->LinkEndChild(new TiXmlText(tiles.c_str()));
+msg->LinkEndChild(alt);
+}
+data->LinkEndChild(msg);
 
-    msg = new TiXmlElement("towers");
+msg = new TiXmlElement("towers");
 
-    // Figure out amount of towers used
-    int twx, twy;
-    int max_tower = 0;
-    for (twx = 0; twx < maxwidth; twx++)
-        for (twy = 0; twy < maxheight; twy++)
-            if (max_tower < get_tower(twx, twy))
-                max_tower = get_tower(twx, twy);
+// Figure out amount of towers used
+int twx, twy;
+int max_tower = 0;
+for (twx = 0; twx < maxwidth; twx++)
+for (twy = 0; twy < maxheight; twy++)
+	if (max_tower < get_tower(twx, twy))
+		max_tower = get_tower(twx, twy);
 
-    TiXmlElement* tw;
-    for (int t = 0; t < max_tower; t++) {
-        // Don't save unused towers
-        bool found = false;
-        for (twx = 0; twx < maxwidth && !found; twx++)
-            for (twy = 0; twy < maxheight && !found; twy++)
-                if ((t + 1) == get_tower(twx, twy))
-                    found = true;
+TiXmlElement* tw;
+for (int t = 0; t < max_tower; t++) {
+// Don't save unused towers
+bool found = false;
+for (twx = 0; twx < maxwidth && !found; twx++)
+	for (twy = 0; twy < maxheight && !found; twy++)
+		if ((t + 1) == get_tower(twx, twy))
+			found = true;
 
-        if (!found) {
-            for (int u = (t + 1); u < max_tower; u++) {
-                towers[u - 1].size = towers[u].size;
-                towers[u - 1].scroll = towers[u].scroll;
-                towers[u - 1].tiles.resize(40 * towers[u - 1].size);
-                for (int i = 0; i < 40 * towers[u - 1].size; i++)
-                    towers[u - 1].tiles[i] = towers[u].tiles[i];
-            }
+if (!found) {
+	for (int u = (t + 1); u < max_tower; u++) {
+		towers[u - 1].size = towers[u].size;
+		towers[u - 1].scroll = towers[u].scroll;
+		towers[u - 1].tiles.resize(40 * towers[u - 1].size);
+		for (int i = 0; i < 40 * towers[u - 1].size; i++)
+			towers[u - 1].tiles[i] = towers[u].tiles[i];
+	}
 
-            // Shift tower ID in rooms
-            for (twx = 0; twx < maxwidth; twx++)
-                for (twy = 0; twy < maxheight; twy++)
-                    if (level[twx + twy * maxwidth].tower > t)
-                        level[twx + twy * maxwidth].tower--;
+	// Shift tower ID in rooms
+	for (twx = 0; twx < maxwidth; twx++)
+		for (twy = 0; twy < maxheight; twy++)
+			if (level[twx + twy * maxwidth].tower > t)
+				level[twx + twy * maxwidth].tower--;
 
-            // Shift tower ID in entities
-            for (size_t i = 0; i < edentity.size(); i++) {
-                if (edentity[i].intower == t ||
-                    (edentity[i].t == 13 && edentity[i].p3 == t)) {
-                    removeedentity(i);
-                    i--;
-                    continue;
-                }
+	// Shift tower ID in entities
+	for (size_t i = 0; i < edentity.size(); i++) {
+		if (edentity[i].intower == t ||
+			(edentity[i].t == 13 && edentity[i].p3 == t)) {
+			removeedentity(i);
+			i--;
+			continue;
+		}
 
-                if (edentity[i].intower > t)
-                    edentity[i].intower--;
-                if (edentity[i].t == 13 && edentity[i].p3 > t)
-                    edentity[i].p3--;
-            }
+		if (edentity[i].intower > t)
+			edentity[i].intower--;
+		if (edentity[i].t == 13 && edentity[i].p3 > t)
+			edentity[i].p3--;
+	}
 
-            t--;
-            max_tower--;
-            continue;
-        }
+	t--;
+	max_tower--;
+	continue;
+}
 
-        std::string tiles = "";
-        for (int y = 0; y < towers[t].size; y++)
-            for (int x = 0; x < 40; x++)
-                tiles += help.String(towers[t].tiles[x + y*40]) + ",";
+std::string tiles = "";
+for (int y = 0; y < towers[t].size; y++)
+	for (int x = 0; x < 40; x++)
+		tiles += help.String(towers[t].tiles[x + y*40]) + ",";
 
-        tw = new TiXmlElement("tower");
-        tw->SetAttribute("size", towers[t].size);
-        tw->SetAttribute("scroll", towers[t].scroll);
-        tw->LinkEndChild(new TiXmlText(tiles.c_str()));
-        msg->LinkEndChild(tw);
-    }
-    data->LinkEndChild(msg);
+tw = new TiXmlElement("tower");
+tw->SetAttribute("size", towers[t].size);
+tw->SetAttribute("scroll", towers[t].scroll);
+tw->LinkEndChild(new TiXmlText(tiles.c_str()));
+msg->LinkEndChild(tw);
+}
+data->LinkEndChild(msg);
 
-    //Old save format
-    /*
-    std::string contentsString;
-    for(int i = 0; i < contents.size(); i++ )
-    {
-    	contentsString += help.String(contents[i]) + ",";
-    }
-    msg = new TiXmlElement( "contents" );
-    msg->LinkEndChild( new TiXmlText( contentsString.c_str() ));
-    data->LinkEndChild( msg );
-    */
+//Old save format
+/*
+std::string contentsString;
+for(int i = 0; i < contents.size(); i++ )
+{
+contentsString += help.String(contents[i]) + ",";
+}
+msg = new TiXmlElement( "contents" );
+msg->LinkEndChild( new TiXmlText( contentsString.c_str() ));
+data->LinkEndChild( msg );
+*/
 
-    msg = new TiXmlElement( "teleporters" );
-    for(size_t i = 0; i < map.teleporters.size(); i++)
-    {
-        TiXmlElement *teleporterElement = new TiXmlElement( "teleporter" );
-        teleporterElement->SetAttribute( "x", map.teleporters[i].x);
-        teleporterElement->SetAttribute( "y", map.teleporters[i].y);
-        msg->LinkEndChild( teleporterElement );
-    }
+msg = new TiXmlElement( "teleporters" );
+for(size_t i = 0; i < map.teleporters.size(); i++)
+{
+TiXmlElement *teleporterElement = new TiXmlElement( "teleporter" );
+teleporterElement->SetAttribute( "x", map.teleporters[i].x);
+teleporterElement->SetAttribute( "y", map.teleporters[i].y);
+msg->LinkEndChild( teleporterElement );
+}
 
-    data->LinkEndChild( msg );
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement( "timetrials" );
-    for(int i = 0; i < (int)ed.customtrials.size(); i++) {
-        TiXmlElement *trialElement = new TiXmlElement( "trial" );
-        trialElement->SetAttribute( "roomx",    ed.customtrials[i].roomx   );
-        trialElement->SetAttribute( "roomy",    ed.customtrials[i].roomy   );
-        trialElement->SetAttribute( "startx",   ed.customtrials[i].startx  );
-        trialElement->SetAttribute( "starty",   ed.customtrials[i].starty  );
-        trialElement->SetAttribute( "startf",   ed.customtrials[i].startf  );
-        trialElement->SetAttribute( "par",      ed.customtrials[i].par     );
-        trialElement->SetAttribute( "trinkets", ed.customtrials[i].trinkets);
-        trialElement->SetAttribute( "music",    ed.customtrials[i].music   );
-        trialElement->LinkEndChild( new TiXmlText( ed.customtrials[i].name.c_str() )) ;
-        msg->LinkEndChild( trialElement );
-    }
+msg = new TiXmlElement( "timetrials" );
+for(int i = 0; i < (int)ed.customtrials.size(); i++) {
+TiXmlElement *trialElement = new TiXmlElement( "trial" );
+trialElement->SetAttribute( "roomx",    ed.customtrials[i].roomx   );
+trialElement->SetAttribute( "roomy",    ed.customtrials[i].roomy   );
+trialElement->SetAttribute( "startx",   ed.customtrials[i].startx  );
+trialElement->SetAttribute( "starty",   ed.customtrials[i].starty  );
+trialElement->SetAttribute( "startf",   ed.customtrials[i].startf  );
+trialElement->SetAttribute( "par",      ed.customtrials[i].par     );
+trialElement->SetAttribute( "trinkets", ed.customtrials[i].trinkets);
+trialElement->SetAttribute( "music",    ed.customtrials[i].music   );
+trialElement->LinkEndChild( new TiXmlText( ed.customtrials[i].name.c_str() )) ;
+msg->LinkEndChild( trialElement );
+}
 
-    data->LinkEndChild( msg );
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement("dimensions");
-    for (size_t i = 0; i < dimensions.size(); i++) {
-        Dimension* dim = &dimensions[i];
+msg = new TiXmlElement("dimensions");
+for (size_t i = 0; i < dimensions.size(); i++) {
+Dimension* dim = &dimensions[i];
 
-        TiXmlElement* dimensionEl = new TiXmlElement("dimension");
-        dimensionEl->SetAttribute("x", dim->x);
-        dimensionEl->SetAttribute("y", dim->y);
-        dimensionEl->SetAttribute("w", dim->w);
-        dimensionEl->SetAttribute("h", dim->h);
-        dimensionEl->LinkEndChild(new TiXmlText(dim->name.c_str()));
-        msg->LinkEndChild(dimensionEl);
-    }
-    data->LinkEndChild(msg);
+TiXmlElement* dimensionEl = new TiXmlElement("dimension");
+dimensionEl->SetAttribute("x", dim->x);
+dimensionEl->SetAttribute("y", dim->y);
+dimensionEl->SetAttribute("w", dim->w);
+dimensionEl->SetAttribute("h", dim->h);
+dimensionEl->LinkEndChild(new TiXmlText(dim->name.c_str()));
+msg->LinkEndChild(dimensionEl);
+}
+data->LinkEndChild(msg);
 
-    msg = new TiXmlElement( "edEntities" );
-    for(size_t i = 0; i < edentity.size(); i++)
-    {
-        TiXmlElement *edentityElement = new TiXmlElement( "edentity" );
-        edentityElement->SetAttribute( "x", edentity[i].x);
-        edentityElement->SetAttribute(  "y", edentity[i].y);
-        edentityElement->SetAttribute( "subx", edentity[i].subx);
-        edentityElement->SetAttribute(  "suby", edentity[i].suby);
-        edentityElement->SetAttribute(  "t", edentity[i].t);
-        edentityElement->SetAttribute(  "p1", edentity[i].p1);
-        edentityElement->SetAttribute(  "p2", edentity[i].p2);
-        edentityElement->SetAttribute(  "p3", edentity[i].p3);
-        edentityElement->SetAttribute( "p4", edentity[i].p4);
-        edentityElement->SetAttribute( "p5", edentity[i].p5);
-        edentityElement->SetAttribute(  "p6", edentity[i].p6);
-        if (edentity[i].state != 0)
-                edentityElement->SetAttribute("state", edentity[i].state);
-        edentityElement->SetAttribute("intower", edentity[i].intower);
-        if (edentity[i].activityname != "") {
-            edentityElement->SetAttribute(  "activityname", edentity[i].activityname.c_str());
-        }
-        if (edentity[i].activitycolor != "") {
-            edentityElement->SetAttribute(  "activitycolor", edentity[i].activitycolor.c_str());
-        }
-        if (edentity[i].onetime)
-            edentityElement->SetAttribute("onetime", help.String((int) edentity[i].onetime).c_str());
-        edentityElement->LinkEndChild( new TiXmlText( edentity[i].scriptname.c_str() )) ;
-        msg->LinkEndChild( edentityElement );
-    }
+msg = new TiXmlElement( "edEntities" );
+for(size_t i = 0; i < edentity.size(); i++)
+{
+TiXmlElement *edentityElement = new TiXmlElement( "edentity" );
+edentityElement->SetAttribute( "x", edentity[i].x);
+edentityElement->SetAttribute(  "y", edentity[i].y);
+edentityElement->SetAttribute( "subx", edentity[i].subx);
+edentityElement->SetAttribute(  "suby", edentity[i].suby);
+edentityElement->SetAttribute(  "t", edentity[i].t);
+edentityElement->SetAttribute(  "p1", edentity[i].p1);
+edentityElement->SetAttribute(  "p2", edentity[i].p2);
+edentityElement->SetAttribute(  "p3", edentity[i].p3);
+edentityElement->SetAttribute( "p4", edentity[i].p4);
+edentityElement->SetAttribute( "p5", edentity[i].p5);
+edentityElement->SetAttribute(  "p6", edentity[i].p6);
+if (edentity[i].state != 0)
+		edentityElement->SetAttribute("state", edentity[i].state);
+edentityElement->SetAttribute("intower", edentity[i].intower);
+if (edentity[i].activityname != "") {
+	edentityElement->SetAttribute(  "activityname", edentity[i].activityname.c_str());
+}
+if (edentity[i].activitycolor != "") {
+	edentityElement->SetAttribute(  "activitycolor", edentity[i].activitycolor.c_str());
+}
+if (edentity[i].onetime)
+	edentityElement->SetAttribute("onetime", help.String((int) edentity[i].onetime).c_str());
+edentityElement->LinkEndChild( new TiXmlText( edentity[i].scriptname.c_str() )) ;
+msg->LinkEndChild( edentityElement );
+}
 
-    data->LinkEndChild( msg );
+data->LinkEndChild( msg );
 
-    msg = new TiXmlElement( "levelMetaData" );
-    int rowwidth = 0;
-    int maxrowwidth = std::max(mapwidth, 20);
-    int rows = 0;
-    int maxrows = mapwidth <= 20 && mapheight <= 20 ? 20 : mapheight;
-    for (int i = 0; i < maxwidth * maxheight; i++) {
-        TiXmlElement *edlevelclassElement = new TiXmlElement( "edLevelClass" );
-        edlevelclassElement->SetAttribute( "tileset", level[i].tileset);
-        edlevelclassElement->SetAttribute(  "tilecol", level[i].tilecol);
+msg = new TiXmlElement( "levelMetaData" );
+int rowwidth = 0;
+int maxrowwidth = std::max(mapwidth, 20);
+int rows = 0;
+int maxrows = mapwidth <= 20 && mapheight <= 20 ? 20 : mapheight;
+for (int i = 0; i < maxwidth * maxheight; i++) {
+TiXmlElement *edlevelclassElement = new TiXmlElement( "edLevelClass" );
+edlevelclassElement->SetAttribute( "tileset", level[i].tileset);
+edlevelclassElement->SetAttribute(  "tilecol", level[i].tilecol);
 		// Since these will be 0 aka the default value
 		// We really don't need this for every single room
 		// Only store these if they are a non zero value!
@@ -3285,29 +3285,35 @@ dmwidth(void)
     return 40;
 }
 
-int cycleThroughCustomResources(int current, std::map <int, std::vector<SDL_Surface*>>& Map)
+int cycle_through_custom_resources(int current, std::map <int, std::vector<SDL_Surface*>>& Map, bool forward)
 {
-	bool currentonefound = false;
-	int currentsheet = current;
-	int firstsheet = 0;
-	int nextsheet = 0;
-	for (auto sheet : Map) {
-		if (firstsheet == 0)
-			firstsheet = sheet.first;
-
-		if (currentonefound) {
-			nextsheet = sheet.first;
-			break;
-		}
-
-		if (sheet.first == currentsheet)
-			currentonefound = true;
+    // The map is empty only the default value is valid
+    if(Map.size() == 0)
+        return 0;
+    // The current value is the default, use the first (or last) custom
+    if(current == 0)
+        return forward ? Map.begin() -> first : (--Map.end())->first;
+    // Once we found the current one return the next
+    bool returnNext = false;
+    if(forward){
+        for(auto it = Map.begin(); it != Map.end(); ++it){
+            if(returnNext)
+                return it->first;
+            if(current == it->first)
+              returnNext = true;
+        }
+    }else{
+        for(auto it = Map.end(); it != Map.begin(); ){
+            --it;
+            if(returnNext)
+                return it->first;
+            if(current == it->first)
+              returnNext = true;
+        }
     }
-
-	if (!currentonefound)
-		nextsheet = firstsheet;
-
-	return nextsheet;
+    // We have reached the end because the last one was the current one or that custom resource
+    // no longer exist just go back to the default resource
+    return 0;
 }
 
 void editorrender()
@@ -5888,6 +5894,20 @@ void editorinput()
                 ed.drawmode=-6;
                 ed.keydelay = 6;
             }
+            
+            if(key.keymap[SDLK_F9]) {
+                int nextspritesheet = cycle_through_custom_resources(ed.getcustomsprites(), graphics.customsprites, false);
+
+                ed.level[ed.levx + ed.levy*ed.maxwidth].customspritesheet = nextspritesheet;
+
+                if (nextspritesheet == 0)
+                    ed.note = "Now using default spritesheet";
+                else
+                    ed.note = "Now using sprites" + std::to_string(nextspritesheet) + ".png";
+                ed.notedelay = 45;
+                ed.updatetiles = true;
+                ed.keydelay = 6;
+            }
         } else if (key.keymap[SDLK_LCTRL] || key.keymap[SDLK_RCTRL]) {
             // Ctrl modifiers
             if (key.keymap[SDLK_F1]) {
@@ -5961,6 +5981,20 @@ void editorinput()
                 if (ed.entspeed > speedcap) ed.entspeed = -speedcap;
             }
 
+            if(key.keymap[SDLK_F9]) {
+                int nextspritesheet = cycle_through_custom_resources(ed.getcustomsprites(), graphics.customsprites, true);
+
+                ed.level[ed.levx + ed.levy*ed.maxwidth].customspritesheet = nextspritesheet;
+
+                if (nextspritesheet == 0)
+                    ed.note = "Now using default spritesheet";
+                else
+                    ed.note = "Now using sprites" + std::to_string(nextspritesheet) + ".png";
+                ed.notedelay = 45;
+                ed.updatetiles = true;
+                ed.keydelay = 6;
+            }
+
         } else if (key.keymap[SDLK_LSHIFT] || key.keymap[SDLK_RSHIFT]) {
             // Shift modifiers
             if (key.keymap[SDLK_UP] || key.keymap[SDLK_DOWN] ||
@@ -6013,19 +6047,19 @@ void editorinput()
             if (key.keymap[SDLK_3]) ed.drawmode=19;
 
             if(key.keymap[SDLK_F9]) {
-				int nextspritesheet = cycleThroughCustomResources(ed.getcustomsprites(), graphics.customsprites);
+                int nexttilesheet = cycle_through_custom_resources(ed.getcustomtiles(), graphics.customtiles, false);
 
-                ed.level[ed.levx + ed.levy*ed.maxwidth].customspritesheet = nextspritesheet;
+                ed.level[ed.levx + ed.levy*ed.maxwidth].customtileset = nexttilesheet;
 
-                if (nextspritesheet == 0)
-                    ed.note = "Now using default spritesheet";
+                if (nexttilesheet == 0)
+                    ed.note = "Now using default tilesheet";
                 else
-                    ed.note = "Now using sprites" + std::to_string(nextspritesheet) + ".png";
+                    ed.note = "Now using tiles" + std::to_string(nexttilesheet) + ".png";
                 ed.notedelay = 45;
                 ed.updatetiles = true;
                 ed.keydelay = 6;
-				printf("Should cycle to next spritesheet\n");
-			}
+            }
+
         } else {
             // No modifiers
             if (key.keymap[SDLK_COMMA] || key.keymap[SDLK_PERIOD] || key.isDown(SDL_CONTROLLER_BUTTON_X) || key.isDown(SDL_CONTROLLER_BUTTON_Y)) {
@@ -6174,7 +6208,7 @@ void editorinput()
                 ed.keydelay=6;
             }
             if(key.keymap[SDLK_F9]) {
-				int nexttilesheet = cycleThroughCustomResources(ed.getcustomtiles(), graphics.customtiles);
+                int nexttilesheet = cycle_through_custom_resources(ed.getcustomtiles(), graphics.customtiles, true);
 
                 ed.level[ed.levx + ed.levy*ed.maxwidth].customtileset = nexttilesheet;
 

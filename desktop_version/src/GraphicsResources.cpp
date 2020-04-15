@@ -175,7 +175,6 @@ GraphicsResources::~GraphicsResources(void)
 
 	for (auto tilesheet : im_customtiles)
 		SDL_FreeSurface(tilesheet.second);
-	
 	for (auto spritesheet : im_customsprites)
 		SDL_FreeSurface(spritesheet.second);
 }
