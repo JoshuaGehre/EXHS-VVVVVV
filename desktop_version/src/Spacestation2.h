@@ -1,14 +1,13 @@
 #ifndef SPACESTATION2_H
 #define SPACESTATION2_H
 
-#include "Game.h"
 #include "Entity.h"
+#include "Game.h"
 
 #include <string>
 
-class spacestation2class
-{
-public:
+class spacestation2class {
+  public:
 	const int* loadlevel(int rx, int ry);
 	std::string roomname;
 };

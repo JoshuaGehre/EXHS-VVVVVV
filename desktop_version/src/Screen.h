@@ -3,9 +3,8 @@
 
 #include <SDL.h>
 
-class Screen
-{
-public:
+class Screen {
+  public:
 	void init();
 
 	void ResizeScreen(int x, int y);
@@ -29,9 +28,9 @@ public:
 	int stretchMode = 0;
 	bool vsync = false;
 
-	SDL_Window *m_window;
-	SDL_Renderer *m_renderer;
-	SDL_Texture *m_screenTexture;
+	SDL_Window* m_window;
+	SDL_Renderer* m_renderer;
+	SDL_Texture* m_screenTexture;
 	SDL_Surface* m_screen;
 
 	SDL_Rect filterSubrect;

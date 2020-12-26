@@ -2,14 +2,14 @@
 #include "Game.h"
 #include "preloader.h"
 
+#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
 
 #ifdef __MINGW32__
-#define PRINTF_LL "%I64d"
+	#define PRINTF_LL "%I64d"
 #else
-#define PRINTF_LL "%lld"
+	#define PRINTF_LL "%lld"
 #endif
 
 /* FIXME: Abstract to FileSystemUtils! */
@@ -25,11 +25,10 @@ binaryBlob::binaryBlob()
 void binaryBlob::AddFileToBinaryBlob(const char* _path)
 {
 	long size;
-	char * memblock;
+	char* memblock;
 
-	FILE *file = fopen(_path, "rb");
-	if (file != NULL)
-	{
+	FILE* file = fopen(_path, "rb");
+	if(file != NULL) {
 		fseek(file, 0, SEEK_END);
 		size = ftell(file);
 		fseek(file, 0, SEEK_SET);
@@ -42,37 +41,30 @@ void binaryBlob::AddFileToBinaryBlob(const char* _path)
 		printf("The complete file size: %li\n", size);
 
 		m_memblocks[numberofHeaders] = memblock;
-		for (int i = 0; _path[i]; i += 1)
-		{
+		for(int i = 0; _path[i]; i += 1) {
 			m_headers[numberofHeaders].name[i] = _path[i];
 		}
 
 		m_headers[numberofHeaders].valid = true;
 		m_headers[numberofHeaders].size = size;
 		numberofHeaders += 1;
-	}
-	else
-	{
+	} else {
 		printf("Unable to open file\n");
 	}
 }
 
 void binaryBlob::writeBinaryBlob(const char* _name)
 {
-	FILE *file = fopen(_name, "wb");
-	if (file != NULL)
-	{
+	FILE* file = fopen(_name, "wb");
+	if(file != NULL) {
 		fwrite((char*) &m_headers, 1, sizeof(m_headers), file);
 
-		for (int i = 0; i < numberofHeaders; i += 1)
-		{
+		for(int i = 0; i < numberofHeaders; i += 1) {
 			fwrite(m_memblocks[i], 1, m_headers[i].size, file);
 		}
 
 		fclose(file);
-	}
-	else
-	{
+	} else {
 		printf("Unable to open new file for writing. Feels bad.\n");
 	}
 }
@@ -82,9 +74,8 @@ bool binaryBlob::unPackBinary(const char* name)
 {
 	PHYSFS_sint64 size;
 
-	PHYSFS_File *handle = PHYSFS_openRead(name);
-	if (handle == NULL)
-	{
+	PHYSFS_File* handle = PHYSFS_openRead(name);
+	if(handle == NULL) {
 		printf("Unable to open file %s\n", name);
 		return false;
 	}
@@ -95,29 +86,24 @@ bool binaryBlob::unPackBinary(const char* name)
 
 	int offset = 0 + (sizeof(m_headers));
 
-	for (size_t i = 0; i < SDL_arraysize(m_headers); i += 1)
-	{
+	for(size_t i = 0; i < SDL_arraysize(m_headers); i += 1) {
 		/* Name can be stupid, just needs to be terminated */
 		m_headers[i].name[47] = '\0';
 
-		if (m_headers[i].valid & ~0x1 || !m_headers[i].valid)
-		{
+		if(m_headers[i].valid & ~0x1 || !m_headers[i].valid) {
 			m_headers[i].valid = false;
 			continue; /* Must be EXACTLY 1 or 0 */
 		}
-		if (m_headers[i].size < 1)
-		{
+		if(m_headers[i].size < 1) {
 			continue; /* Must be nonzero and positive */
 		}
-		if ((offset + m_headers[i].size) > size)
-		{
+		if((offset + m_headers[i].size) > size) {
 			continue; /* Bogus size value */
 		}
 
 		PHYSFS_seek(handle, offset);
 		m_memblocks[i] = (char*) malloc(m_headers[i].size);
-		if (m_memblocks[i] == NULL)
-		{
+		if(m_memblocks[i] == NULL) {
 			exit(1); /* Oh god we're out of memory, just bail */
 		}
 		PHYSFS_readBytes(handle, m_memblocks[i], m_headers[i].size);
@@ -128,10 +114,8 @@ bool binaryBlob::unPackBinary(const char* name)
 
 	printf("The complete reloaded file size: " PRINTF_LL "\n", size);
 
-	for (size_t i = 0; i < SDL_arraysize(m_headers); i += 1)
-	{
-		if (m_headers[i].valid == false)
-		{
+	for(size_t i = 0; i < SDL_arraysize(m_headers); i += 1) {
+		if(m_headers[i].valid == false) {
 			break;
 		}
 
@@ -158,10 +142,8 @@ void binaryBlob::clear()
 
 int binaryBlob::getIndex(const char* _name)
 {
-	for (size_t i = 0; i < SDL_arraysize(m_headers); i += 1)
-	{
-		if (strcmp(_name, m_headers[i].name) == 0)
-		{
+	for(size_t i = 0; i < SDL_arraysize(m_headers); i += 1) {
+		if(strcmp(_name, m_headers[i].name) == 0) {
 			return i;
 		}
 	}
@@ -181,11 +163,10 @@ char* binaryBlob::getAddress(int _index)
 std::vector<int> binaryBlob::getExtra()
 {
 	std::vector<int> result;
-	for (size_t i = 0; i < SDL_arraysize(m_headers); i += 1)
-	{
-		if (m_headers[i].valid
-#define FOREACH_TRACK(track_name) && strcmp(m_headers[i].name, track_name) != 0
-		TRACK_NAMES
+	for(size_t i = 0; i < SDL_arraysize(m_headers); i += 1) {
+		if(m_headers[i].valid
+#define FOREACH_TRACK(track_name) &&strcmp(m_headers[i].name, track_name) != 0
+			   TRACK_NAMES
 #undef FOREACH_TRACK
 		) {
 			result.push_back(i);

@@ -29,64 +29,45 @@ void blockclass::rectset(const int xi, const int yi, const int wi, const int hi)
 	rect.h = hi;
 }
 
-void blockclass::setblockcolour( std::string col )
+void blockclass::setblockcolour(std::string col)
 {
-	if (col == "cyan")
-	{
+	if(col == "cyan") {
 		r = 164;
 		g = 164;
 		b = 255;
-	}
-	else if (col == "red")
-	{
+	} else if(col == "red") {
 		r = 255;
 		g = 60;
 		b = 60;
-	}
-	else if (col == "green")
-	{
+	} else if(col == "green") {
 		r = 144;
 		g = 255;
 		b = 144;
-	}
-	else if (col == "yellow")
-	{
+	} else if(col == "yellow") {
 		r = 255;
 		g = 255;
 		b = 134;
-	}
-	else if (col == "blue")
-	{
+	} else if(col == "blue") {
 		r = 95;
 		g = 95;
 		b = 255;
-	}
-	else if (col == "purple")
-	{
+	} else if(col == "purple") {
 		r = 255;
 		g = 134;
 		b = 255;
-	}
-	else if (col == "white")
-	{
+	} else if(col == "white") {
 		r = 244;
 		g = 244;
 		b = 244;
-	}
-	else if (col == "gray")
-	{
+	} else if(col == "gray") {
 		r = 174;
 		g = 174;
 		b = 174;
-	}
-	else if (col == "orange")
-	{
+	} else if(col == "orange") {
 		r = 255;
 		g = 130;
 		b = 20;
-	}
-	else
-	{
+	} else {
 		//use a gray
 		r = 174;
 		g = 174;

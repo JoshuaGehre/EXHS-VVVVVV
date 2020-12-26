@@ -1,12 +1,12 @@
 #ifndef LOGIC_H
 #define LOGIC_H
 
-#include "Graphics.h"
-#include "Game.h"
 #include "Entity.h"
-#include "UtilityClass.h"
-#include "Music.h"
+#include "Game.h"
+#include "Graphics.h"
 #include "Map.h"
+#include "Music.h"
+#include "UtilityClass.h"
 
 void titleupdatetextcol();
 

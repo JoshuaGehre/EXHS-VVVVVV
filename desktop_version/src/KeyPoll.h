@@ -1,19 +1,18 @@
 #ifndef KEYPOLL_H
 #define KEYPOLL_H
 
-#include <string>
-#include <vector>
-#include "Game.h"
 #include "Enums.h"
+#include "Game.h"
 #include <map> // FIXME: I should feel very bad for using C++ -flibit
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <SDL.h>
 
 #include "Screen.h"
 
-enum Kybrd
-{
+enum Kybrd {
 	KEYBOARD_UP = SDLK_UP,
 	KEYBOARD_DOWN = SDLK_DOWN,
 	KEYBOARD_LEFT = SDLK_LEFT,
@@ -34,9 +33,8 @@ enum Kybrd
 	KEYBOARD_BACKSPACE = SDLK_BACKSPACE
 };
 
-class KeyPoll
-{
-public:
+class KeyPoll {
+  public:
 	std::map<SDL_Keycode, bool> keymap;
 
 	bool isActive = false;
@@ -81,22 +79,22 @@ public:
 	bool textentrymode = false;
 	int keyentered, keybufferlen = 0;
 	bool pressedbackspace = false;
-        bool wantsOSKClose = false;
+	bool wantsOSKClose = false;
 	std::string keybuffer;
 
 	bool linealreadyemptykludge;
 
 	Uint64 pauseStart = 0;
 
-        SDL_Keycode fakekey;
-        int fakekeytimer = -1;
-        std::unordered_map<SDL_FingerID, SDL_Keycode> finger_buttons;
-        int delayed_left_time = -1;
-        int delayed_right_time = -1;
-        float orig_x = 0;
-        input_type type = swipeinput;
+	SDL_Keycode fakekey;
+	int fakekeytimer = -1;
+	std::unordered_map<SDL_FingerID, SDL_Keycode> finger_buttons;
+	int delayed_left_time = -1;
+	int delayed_right_time = -1;
+	float orig_x = 0;
+	input_type type = swipeinput;
 
-private:
+  private:
 	std::map<SDL_JoystickID, SDL_GameController*> controllers;
 	std::map<SDL_GameControllerButton, bool> buttonmap;
 	int xVel, yVel = 0;

@@ -6,35 +6,33 @@
 /* Laaaazyyyyyyy -flibit */
 // #define VVV_COMPILEMUSIC
 
-#define TRACK_NAMES \
-	FOREACH_TRACK("data/music/0levelcomplete.ogg") \
-	FOREACH_TRACK("data/music/1pushingonwards.ogg") \
-	FOREACH_TRACK("data/music/2positiveforce.ogg") \
-	FOREACH_TRACK("data/music/3potentialforanything.ogg") \
-	FOREACH_TRACK("data/music/4passionforexploring.ogg") \
-	FOREACH_TRACK("data/music/5intermission.ogg") \
-	FOREACH_TRACK("data/music/6presentingvvvvvv.ogg") \
-	FOREACH_TRACK("data/music/7gamecomplete.ogg") \
-	FOREACH_TRACK("data/music/8predestinedfate.ogg") \
+#define TRACK_NAMES                                        \
+	FOREACH_TRACK("data/music/0levelcomplete.ogg")         \
+	FOREACH_TRACK("data/music/1pushingonwards.ogg")        \
+	FOREACH_TRACK("data/music/2positiveforce.ogg")         \
+	FOREACH_TRACK("data/music/3potentialforanything.ogg")  \
+	FOREACH_TRACK("data/music/4passionforexploring.ogg")   \
+	FOREACH_TRACK("data/music/5intermission.ogg")          \
+	FOREACH_TRACK("data/music/6presentingvvvvvv.ogg")      \
+	FOREACH_TRACK("data/music/7gamecomplete.ogg")          \
+	FOREACH_TRACK("data/music/8predestinedfate.ogg")       \
 	FOREACH_TRACK("data/music/9positiveforcereversed.ogg") \
-	FOREACH_TRACK("data/music/10popularpotpourri.ogg") \
-	FOREACH_TRACK("data/music/11pipedream.ogg") \
-	FOREACH_TRACK("data/music/12pressurecooker.ogg") \
-	FOREACH_TRACK("data/music/13pacedenergy.ogg") \
-	FOREACH_TRACK("data/music/14piercingthesky.ogg") \
+	FOREACH_TRACK("data/music/10popularpotpourri.ogg")     \
+	FOREACH_TRACK("data/music/11pipedream.ogg")            \
+	FOREACH_TRACK("data/music/12pressurecooker.ogg")       \
+	FOREACH_TRACK("data/music/13pacedenergy.ogg")          \
+	FOREACH_TRACK("data/music/14piercingthesky.ogg")       \
 	FOREACH_TRACK("data/music/predestinedfatefinallevel.ogg")
 
-struct resourceheader
-{
+struct resourceheader {
 	char name[48];
 	int start_UNUSED = 0;
 	int size = 0;
 	bool valid = false;
 };
 
-class binaryBlob
-{
-public:
+class binaryBlob {
+  public:
 	binaryBlob();
 
 #ifdef VVV_COMPILEMUSIC
@@ -53,11 +51,10 @@ public:
 
 	char* getAddress(int _index);
 
-private:
+  private:
 	int numberofHeaders = 0;
 	resourceheader m_headers[128];
 	char* m_memblocks[128];
 };
-
 
 #endif /* BINARYBLOB_H */

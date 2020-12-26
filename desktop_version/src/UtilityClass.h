@@ -2,13 +2,14 @@
 #define UTILITYCLASS_H
 
 #include <SDL.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 // always return positive modulo result if modulus is positive
-template<typename N>
-N mod(const N &num, const N &mod) {
-    return (num % mod + mod) % mod;
+template <typename N>
+N mod(const N& num, const N& mod)
+{
+	return (num % mod + mod) % mod;
 }
 
 int ss_toi(std::string _s);
@@ -25,50 +26,46 @@ bool is_positive_num(const std::string& str, bool hex);
 
 bool endsWith(const std::string& str, const std::string& suffix);
 
-std::vector<std::string> split(const std::string &s, char delim, std::vector<std::string> &elems);
+std::vector<std::string> split(const std::string& s, char delim, std::vector<std::string>& elems);
 
-std::vector<std::string> split(const std::string &s, char delim);
+std::vector<std::string> split(const std::string& s, char delim);
 
-#define INBOUNDS(index, vector) ((int) index >= 0 && (int) index < (int) vector.size())
+#define INBOUNDS(index, vector)    ((int) index >= 0 && (int) index < (int) vector.size())
 #define INBOUNDS_ARR(index, array) ((int) index >= 0 && (int) index < (int) SDL_arraysize(array))
 
-#define WHINE_ONCE(message) \
-    static bool whine = true; \
-    if (whine) \
-    { \
-        whine = false; \
-        puts(message); \
-    }
-
+#define WHINE_ONCE(message)   \
+	static bool whine = true; \
+	if(whine) {               \
+		whine = false;        \
+		puts(message);        \
+	}
 
 //helperClass
-class UtilityClass
-{
-public:
-    UtilityClass();
+class UtilityClass {
+  public:
+	UtilityClass();
 
-    static std::string String(int _v);
+	static std::string String(int _v);
 
-    static std::string GCString(std::vector<SDL_GameControllerButton> buttons);
+	static std::string GCString(std::vector<SDL_GameControllerButton> buttons);
 
-    std::string twodigits(int t);
+	std::string twodigits(int t);
 
-    std::string timestring(int t);
+	std::string timestring(int t);
 
-    std::string number(int _t);
+	std::string number(int _t);
 
+	static bool intersects(SDL_Rect A, SDL_Rect B);
 
-    static bool intersects( SDL_Rect A, SDL_Rect B );
+	void updateglow();
 
-    void updateglow();
+	std::string getmusicname(int num);
 
-    std::string getmusicname(int num);
-
-    int glow = 0;
-    bool freezeglow = false;
-    int slowsine = 0;
-    int glowdir = 0;
-    int splitseconds[30];
+	int glow = 0;
+	bool freezeglow = false;
+	int slowsine = 0;
+	int glowdir = 0;
+	int splitseconds[30];
 };
 
 extern UtilityClass help;

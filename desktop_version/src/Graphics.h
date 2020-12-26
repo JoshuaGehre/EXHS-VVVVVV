@@ -2,29 +2,25 @@
 #define GRAPHICS_H
 
 #include "GraphicsResources.h"
-#include <vector>
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
+#include <vector>
 
-
-
+#include "Game.h"
 #include "Maths.h"
 #include "Textbox.h"
 #include "UtilityClass.h"
-#include "Game.h"
 
-
-#include <string>
 #include <algorithm>
 #include <optional>
+#include <string>
 #include <string_view>
 
 #include "GraphicsUtil.h"
 #include "Screen.h"
 
-class Graphics
-{
-public:
+class Graphics {
+  public:
 	void init();
 	~Graphics();
 
@@ -56,7 +52,7 @@ public:
 
 	void makecustomspritearray();
 
-    std::vector<SDL_Surface*>* selectspritesheet();
+	std::vector<SDL_Surface*>* selectspritesheet();
 
 	void drawcoloredtile(int x, int y, int t, int r, int g, int b);
 
@@ -68,7 +64,7 @@ public:
 
 	void setwarprect(int a, int b, int c, int d);
 
-	void createtextbox(std::string t, int xp, int yp, int r= 255, int g= 255, int b = 255, bool allowspecial = false);
+	void createtextbox(std::string t, int xp, int yp, int r = 255, int g = 255, int b = 255, bool allowspecial = false);
 
 	void textboxcenter();
 
@@ -99,7 +95,7 @@ public:
 	void drawpixeltextbox(int x, int y, int w, int h, int w2, int h2, int r, int g, int b, int xo, int yo);
 	void drawcustompixeltextbox(int x, int y, int w, int h, int w2, int h2, int r, int g, int b, int xo, int yo);
 
-	void drawcrewman(int x, int y, int t, bool act, bool noshift =false);
+	void drawcrewman(int x, int y, int t, bool act, bool noshift = false);
 
 	int crewcolour(const int t);
 
@@ -108,13 +104,13 @@ public:
 
 	void drawpartimage(int t, int xp, int yp, int wp, int hp);
 
-	void drawscriptimage(Game& game, int t, int xp, int yp, bool cent=false, int alpha=255, SDL_BlendMode blend=SDL_BLENDMODE_BLEND);
+	void drawscriptimage(Game& game, int t, int xp, int yp, bool cent = false, int alpha = 255, SDL_BlendMode blend = SDL_BLENDMODE_BLEND);
 
 	void drawscriptimagemasked(Game& game, int t, int xp, int yp, int t2, int xp2, int yp2);
 
-	void drawimage(int t, int xp, int yp, bool cent=false);
+	void drawimage(int t, int xp, int yp, bool cent = false);
 
-	void drawimagecol(int t, int xp, int yp, int r, int g, int b, bool cent= false);
+	void drawimagecol(int t, int xp, int yp, int r, int g, int b, bool cent = false);
 
 	void updatetextboxes();
 	void drawgui();
@@ -147,9 +143,8 @@ public:
 	void bprintalpha(int x, int y, std::string t, int r, int g, int b, int a, bool cen = false);
 
 	int len(std::string t);
-	void bigprint( int _x, int _y, std::string _s, int r, int g, int b, bool cen = false, int sc = 2 );
+	void bigprint(int _x, int _y, std::string _s, int r, int g, int b, bool cen = false, int sc = 2);
 	void drawspritesetcol(int x, int y, int t, int c, int flipped = 0);
-
 
 	void flashlight();
 	void screenshake();
@@ -169,7 +164,6 @@ public:
 
 	void bigrprint(int x, int y, std::string& t, int r, int g, int b, bool cen = false, float sc = 2);
 
-
 	void drawtele(int x, int y, int t, Uint32 c);
 
 	void drawtelepart(int x, int y, int t, int c);
@@ -182,8 +176,7 @@ public:
 
 	Uint32 getRGB(Uint32 _col);
 
-	Uint32 RGBflip(Uint8  r, Uint8  g, Uint8  b);
-
+	Uint32 RGBflip(Uint8 r, Uint8 g, Uint8 b);
 
 	Uint32 RGBf(int r, int g, int b);
 
@@ -191,13 +184,13 @@ public:
 
 	void drawbackground(int t);
 	void updatebackground(int t);
-	void drawtile3( int x, int y, int t, int off );
-	void drawentcolours( int x, int y, int t);
-	void drawtile3( int x, int y, int t );
-	void drawtile2( int x, int y, int t );
-	void drawtile( int x, int y, int t );
-	void drawtowertile( int x, int y, int t );
-	void drawtowertile3( int x, int y, int t, int off );
+	void drawtile3(int x, int y, int t, int off);
+	void drawentcolours(int x, int y, int t);
+	void drawtile3(int x, int y, int t);
+	void drawtile2(int x, int y, int t);
+	void drawtile(int x, int y, int t);
+	void drawtowertile(int x, int y, int t);
+	void drawtowertile3(int x, int y, int t, int off);
 
 	void drawmap();
 
@@ -215,7 +208,6 @@ public:
 
 	bool onscreen(int t);
 
-
 	void menuoffrender();
 
 	void drawtowerbackground();
@@ -232,23 +224,21 @@ public:
 
 	int bcol, bcol2, rcol = 0;
 
-
-
 	int m = 0;
 
-	std::vector <SDL_Surface*> images;
+	std::vector<SDL_Surface*> images;
 
-	std::vector <SDL_Surface*> tele;
-	std::vector <SDL_Surface*> tiles;
-	std::vector <SDL_Surface*> tiles2;
-	std::vector <SDL_Surface*> tiles3;
-	std::vector <SDL_Surface*> entcolours;
-	std::vector <SDL_Surface*> sprites;
-	std::vector <SDL_Surface*> flipsprites;
-	std::vector <SDL_Surface*> bfont;
-	std::vector <SDL_Surface*> flipbfont;
-	std::map <int, std::vector<SDL_Surface*>> customtiles;
-	std::map <int, std::vector<SDL_Surface*>> customsprites;
+	std::vector<SDL_Surface*> tele;
+	std::vector<SDL_Surface*> tiles;
+	std::vector<SDL_Surface*> tiles2;
+	std::vector<SDL_Surface*> tiles3;
+	std::vector<SDL_Surface*> entcolours;
+	std::vector<SDL_Surface*> sprites;
+	std::vector<SDL_Surface*> flipsprites;
+	std::vector<SDL_Surface*> bfont;
+	std::vector<SDL_Surface*> flipbfont;
+	std::map<int, std::vector<SDL_Surface*>> customtiles;
+	std::map<int, std::vector<SDL_Surface*>> customsprites;
 
 	bool flipmode = false;
 	bool setflipmode = false;
@@ -299,7 +289,7 @@ public:
 	bool trinketcolset = false;
 	int trinketr, trinketg, trinketb = 0;
 
-	std::vector <textboxclass> textbox;
+	std::vector<textboxclass> textbox;
 
 	bool showcutscenebars = false;
 	int cutscenebarspos = 0;
@@ -322,7 +312,8 @@ public:
 	std::optional<std::string> mapimage;
 
 	bool noclear = false;
-	bool translucentroomname = false;;
+	bool translucentroomname = false;
+	;
 
 	bool showmousecursor = false;
 

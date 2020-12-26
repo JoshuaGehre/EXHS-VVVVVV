@@ -3,15 +3,14 @@
 
 #include "SoundSystem.h"
 
-#include <vector>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#define musicroom(rx, ry) ((rx) + ((ry) * 20))
+#define musicroom(rx, ry) ((rx) + ((ry) *20))
 
-class musicclass
-{
-public:
+class musicclass {
+  public:
 	void init();
 
 	void play(int t, const double position_sec = 0.0, const int fadein_ms = 3000);
@@ -36,8 +35,8 @@ public:
 
 	void playef(int t);
 
-        std::vector<SoundTrack> soundTracks;
-        std::vector<MusicTrack> musicTracks;
+	std::vector<SoundTrack> soundTracks;
+	std::vector<MusicTrack> musicTracks;
 	SoundSystem soundSystem;
 	bool safeToProcessMusic = true;
 
@@ -54,7 +53,7 @@ public:
 	// MMMMMM mod settings
 	bool mmmmmm = false;
 	bool usingmmmmmm = false;
-        bool loaded = false;
+	bool loaded = false;
 
 	int num_pppppp_tracks = 0;
 	int num_mmmmmm_tracks = 0;
@@ -62,11 +61,11 @@ public:
 	Uint64 songStart = 0;
 	Uint64 songEnd = 0;
 
-        std::unordered_map<std::string, SoundTrack> custom_files;
-        std::unordered_map<std::string, int> custom_file_channels;
-        std::unordered_map<int, std::string> custom_channel_paths;
-        std::unordered_map<std::string, std::string> custom_file_paths;
-        std::unordered_map<std::string, int> custom_file_loops;
+	std::unordered_map<std::string, SoundTrack> custom_files;
+	std::unordered_map<std::string, int> custom_file_channels;
+	std::unordered_map<int, std::string> custom_channel_paths;
+	std::unordered_map<std::string, std::string> custom_file_paths;
+	std::unordered_map<std::string, int> custom_file_loops;
 };
 
 extern musicclass music;

@@ -1,20 +1,20 @@
 #include "FileSystemUtils.h"
-#include <vector>
 #include "Game.h"
 #include "Utilities.h"
 #include "preloader.h"
 #include <string>
+#include <vector>
 
 #include "Graphics.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-#include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 #include <SDL.h>
 #include <physfs.h>
@@ -22,32 +22,32 @@
 #include "tinyxml2.h"
 
 #ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
+	#include <CoreFoundation/CoreFoundation.h>
 #endif
 
 /* These are needed for PLATFORM_* crap */
 #if defined(_WIN32)
-#include <windows.h>
-#include <shlobj.h>
-#include <shlwapi.h>
-#include <processenv.h>
-#include <shellapi.h>
-#include <winbase.h>
-#define getcwd(buf, size) GetCurrentDirectory((size), (buf))
+	#include <processenv.h>
+	#include <shellapi.h>
+	#include <shlobj.h>
+	#include <shlwapi.h>
+	#include <winbase.h>
+	#include <windows.h>
+	#define getcwd(buf, size) GetCurrentDirectory((size), (buf))
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__) || defined(__DragonFly__) || defined(__SWITCH__) || defined(__EMSCRIPTEN__)
-#include <unistd.h>
-#include <dirent.h>
-#include <limits.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <spawn.h>
-#include <libgen.h>
-#define MAX_PATH PATH_MAX
+	#include <dirent.h>
+	#include <libgen.h>
+	#include <limits.h>
+	#include <spawn.h>
+	#include <sys/stat.h>
+	#include <sys/types.h>
+	#include <sys/wait.h>
+	#include <unistd.h>
+	#define MAX_PATH PATH_MAX
 #endif
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
+	#include <emscripten.h>
 #endif
 
 char saveDir[MAX_PATH];
@@ -55,77 +55,78 @@ char levelDir[MAX_PATH];
 
 void PLATFORM_getOSDirectory(char* output);
 void PLATFORM_migrateSaveData(char* output);
-void PLATFORM_copyFile(const char *oldLocation, const char *newLocation);
+void PLATFORM_copyFile(const char* oldLocation, const char* newLocation);
 
 extern "C" {
 #ifdef LD_VCE_ZIP
-    extern const char _binary_vce_zip_start;
-    extern const char _binary_vce_zip_end;
+extern const char _binary_vce_zip_start;
+extern const char _binary_vce_zip_end;
 #else
-    extern const unsigned char vce_zip[];
-    extern const unsigned vce_zip_size;
+extern const unsigned char vce_zip[];
+extern const unsigned vce_zip_size;
 #endif
 }
 
-static bool cached_data_zip_load(const char* path) {
+static bool cached_data_zip_load(const char* path)
+{
 #ifdef __SWITCH__
-    FILE* file = fopen(path, "rb");
-    if (file == nullptr) return false;
-    if (fseek(file, 0L, SEEK_END)) {
-        fclose(file);
-        return false;
-    }
-    long size = ftell(file);
-    if (size == -1) {
-        fclose(file);
-        return false;
-    }
-    if (fseek(file, 0L, SEEK_SET)) {
-        fclose(file);
-        return false;
-    }
-    unsigned char* buf = (unsigned char*) malloc(size);
-    size_t read = fread(buf, 1, size, file);
-    if (read != (long unsigned int) size && ferror(file)) {
-        fclose(file);
-        free(buf);
-        return false;
-    }
-    fclose(file);
+	FILE* file = fopen(path, "rb");
+	if(file == nullptr) return false;
+	if(fseek(file, 0L, SEEK_END)) {
+		fclose(file);
+		return false;
+	}
+	long size = ftell(file);
+	if(size == -1) {
+		fclose(file);
+		return false;
+	}
+	if(fseek(file, 0L, SEEK_SET)) {
+		fclose(file);
+		return false;
+	}
+	unsigned char* buf = (unsigned char*) malloc(size);
+	size_t read = fread(buf, 1, size, file);
+	if(read != (long unsigned int) size && ferror(file)) {
+		fclose(file);
+		free(buf);
+		return false;
+	}
+	fclose(file);
 
-    if (!PHYSFS_mountMemory(buf, read, nullptr, "data.zip", NULL, 1)) {
-        free(buf);
-        return false;
-    }
-    return true;
+	if(!PHYSFS_mountMemory(buf, read, nullptr, "data.zip", NULL, 1)) {
+		free(buf);
+		return false;
+	}
+	return true;
 #elif defined(__ANDROID__)
-    SDL_RWops* file = SDL_RWFromFile("data.zip", "rb");
-    if (file == nullptr) return false;
-    long size = file->size(file);
-    if (size == -1) {
-        file->close(file);
-        return false;
-    }
-    unsigned char* buf = (unsigned char*) malloc(size);
-    size_t read = file->read(file, buf, 1, size);
-    if (read == 0) {
-        file->close(file);
-        free(buf);
-        return false;
-    }
-    file->close(file);
+	SDL_RWops* file = SDL_RWFromFile("data.zip", "rb");
+	if(file == nullptr) return false;
+	long size = file->size(file);
+	if(size == -1) {
+		file->close(file);
+		return false;
+	}
+	unsigned char* buf = (unsigned char*) malloc(size);
+	size_t read = file->read(file, buf, 1, size);
+	if(read == 0) {
+		file->close(file);
+		free(buf);
+		return false;
+	}
+	file->close(file);
 
-    if (!PHYSFS_mountMemory(buf, read, nullptr, "data.zip", NULL, 1)) {
-        free(buf);
-        return false;
-    }
-    return true;
+	if(!PHYSFS_mountMemory(buf, read, nullptr, "data.zip", NULL, 1)) {
+		free(buf);
+		return false;
+	}
+	return true;
 #else
-    return PHYSFS_mount(path, NULL, 1);
+	return PHYSFS_mount(path, NULL, 1);
 #endif
 }
 
-int FILESYSTEM_initCore(char *argvZero, char *baseDir, char *assetsPath)
+int FILESYSTEM_initCore(char* argvZero, char* baseDir, char* assetsPath)
 {
 	char output[MAX_PATH + 9];
 	const char* pathSep = PHYSFS_getDirSeparator();
@@ -134,50 +135,42 @@ int FILESYSTEM_initCore(char *argvZero, char *baseDir, char *assetsPath)
 	PHYSFS_permitSymbolicLinks(1);
 
 #ifdef LD_VCE_ZIP
-        PHYSFS_mountMemory(&_binary_vce_zip_start, &_binary_vce_zip_end - &_binary_vce_zip_start, nullptr, "vce.zip", nullptr, 0);
+	PHYSFS_mountMemory(&_binary_vce_zip_start, &_binary_vce_zip_end - &_binary_vce_zip_start, nullptr, "vce.zip", nullptr, 0);
 #else
-        PHYSFS_mountMemory(vce_zip, vce_zip_size, nullptr, "vce.zip", nullptr, 0);
+	PHYSFS_mountMemory(vce_zip, vce_zip_size, nullptr, "vce.zip", nullptr, 0);
 #endif
 
 	/* Determine the OS user directory */
-	if (baseDir && strlen(baseDir) > 0)
-	{
+	if(baseDir && strlen(baseDir) > 0) {
 		strcpy(output, baseDir);
 
 		/* We later append to this path and assume it ends in a slash */
-		if (strcmp(std::string(1, output[strlen(output) - 1]).c_str(), pathSep) != 0)
-		{
+		if(strcmp(std::string(1, output[strlen(output) - 1]).c_str(), pathSep) != 0) {
 			strcat(output, pathSep);
 		}
-	}
-	else
-	{
+	} else {
 		PLATFORM_getOSDirectory(output);
 	}
 	PHYSFS_mount(output, NULL, 0);
 
-        return 1;
+	return 1;
 }
 
-int FILESYSTEM_init(char *argvZero, char *baseDir, char *assetsPath)
+int FILESYSTEM_init(char* argvZero, char* baseDir, char* assetsPath)
 {
 	char output[MAX_PATH + 9];
 	int mkdirResult;
 	const char* pathSep = PHYSFS_getDirSeparator();
 
 	/* Determine the OS user directory */
-	if (baseDir && strlen(baseDir) > 0)
-	{
+	if(baseDir && strlen(baseDir) > 0) {
 		strcpy(output, baseDir);
 
 		/* We later append to this path and assume it ends in a slash */
-		if (strcmp(std::string(1, output[strlen(output) - 1]).c_str(), pathSep) != 0)
-		{
+		if(strcmp(std::string(1, output[strlen(output) - 1]).c_str(), pathSep) != 0) {
 			strcat(output, pathSep);
 		}
-	}
-	else
-	{
+	} else {
 		PLATFORM_getOSDirectory(output);
 	}
 
@@ -185,113 +178,105 @@ int FILESYSTEM_init(char *argvZero, char *baseDir, char *assetsPath)
 	mkdirResult = PHYSFS_mkdir(output);
 
 	/* Mount our base user directory */
-        PHYSFS_unmount(output);
+	PHYSFS_unmount(output);
 	PHYSFS_mount(output, NULL, 0);
 	PHYSFS_setWriteDir(output);
 	printf("Base directory: %s\n", output);
 
-        pre_fakepercent.store(5);
+	pre_fakepercent.store(5);
 	/* Create the save/level folders */
 	mkdirResult |= PHYSFS_mkdir("saves");
 	mkdirResult |= PHYSFS_mkdir("levels");
 
 	/* Store full save directory */
 	SDL_snprintf(saveDir, sizeof(saveDir), "%s%s%s",
-		output,
-		"saves",
-		PHYSFS_getDirSeparator()
-	);
+				 output,
+				 "saves",
+				 PHYSFS_getDirSeparator());
 	printf("Save directory: %s\n", saveDir);
 
-        pre_fakepercent.store(10);
+	pre_fakepercent.store(10);
 
 	/* Store full level directory */
 	SDL_snprintf(levelDir, sizeof(levelDir), "%s%s%s",
-		output,
-		"levels",
-		PHYSFS_getDirSeparator()
-	);
+				 output,
+				 "levels",
+				 PHYSFS_getDirSeparator());
 	printf("Level directory: %s\n", levelDir);
 
 	/* We didn't exist until now, migrate files! */
-	if (mkdirResult == 0)
-	{
+	if(mkdirResult == 0) {
 		PLATFORM_migrateSaveData(output);
 	}
 
 	/* Mount the stock content last */
 
-        pre_fakepercent.store(15);
+	pre_fakepercent.store(15);
 
-	if (assetsPath) {
-            strcpy_safe(output, assetsPath);
-        } else {
+	if(assetsPath) {
+		strcpy_safe(output, assetsPath);
+	} else {
 #if defined(__APPLE__)
-            CFURLRef appUrlRef = CFBundleCopyResourceURL(CFBundleGetMainBundle(), CFSTR("data.zip"), NULL, NULL);
-            if (!appUrlRef) {
-                SDL_ShowSimpleMessageBox(
-                        SDL_MESSAGEBOX_ERROR,
-                        "Couldn't find data.zip in .app!",
-                        "Please place data.zip in Contents/Resources\n"
-                        "inside VVVVVV-CE.app.",
-                        NULL
-                        );
-                return 0;
-            }
-            if (!CFURLGetFileSystemRepresentation(appUrlRef, true, (uint8_t*) output, MAX_PATH)) {
-                SDL_ShowSimpleMessageBox(
-                        SDL_MESSAGEBOX_ERROR,
-                        "Couldn't get data.zip path!",
-                        "Please report this error.",
-                        NULL
-                        );
-                return 0;
-            }
-            CFRelease(appUrlRef);
+		CFURLRef appUrlRef = CFBundleCopyResourceURL(CFBundleGetMainBundle(), CFSTR("data.zip"), NULL, NULL);
+		if(!appUrlRef) {
+			SDL_ShowSimpleMessageBox(
+				SDL_MESSAGEBOX_ERROR,
+				"Couldn't find data.zip in .app!",
+				"Please place data.zip in Contents/Resources\n"
+				"inside VVVVVV-CE.app.",
+				NULL);
+			return 0;
+		}
+		if(!CFURLGetFileSystemRepresentation(appUrlRef, true, (uint8_t*) output, MAX_PATH)) {
+			SDL_ShowSimpleMessageBox(
+				SDL_MESSAGEBOX_ERROR,
+				"Couldn't get data.zip path!",
+				"Please report this error.",
+				NULL);
+			return 0;
+		}
+		CFRelease(appUrlRef);
 #elif defined(DATA_ZIP_PATH)
-            strcpy_safe(output, DATA_ZIP_PATH);
+		strcpy_safe(output, DATA_ZIP_PATH);
 #else
-            strcpy_safe(output, PHYSFS_getBaseDir());
-            strcat(output, "data.zip");
+		strcpy_safe(output, PHYSFS_getBaseDir());
+		strcat(output, "data.zip");
 #endif
-        }
+	}
 
-        pre_fakepercent.store(20);
+	pre_fakepercent.store(20);
 
-	if (!cached_data_zip_load(output))
-	{
+	if(!cached_data_zip_load(output)) {
 #ifndef __APPLE__
-                if (!getcwd(output, MAX_PATH)) ;
-                strcat(output, "/data.zip");
-                if (!cached_data_zip_load(output))
-                {
+		if(!getcwd(output, MAX_PATH))
+			;
+		strcat(output, "/data.zip");
+		if(!cached_data_zip_load(output)) {
 #endif
-                        puts("Error: data.zip missing!");
-                        puts("You do not have data.zip!");
-                        puts("Grab it from your purchased copy of the game,");
-                        puts("or get it from the free Make and Play Edition.");
+			puts("Error: data.zip missing!");
+			puts("You do not have data.zip!");
+			puts("Grab it from your purchased copy of the game,");
+			puts("or get it from the free Make and Play Edition.");
 
-                        std::string message = "You do not have data.zip at ";
-                        message += output;
-                        message += "!\n\nGrab it from your purchased copy of the game,"
-                                    "\nor get it from the free Make and Play Edition.";
-                        SDL_ShowSimpleMessageBox(
-                                SDL_MESSAGEBOX_ERROR,
-                                "data.zip missing!",
-                                message.c_str(),
-                                NULL
-                        );
-                        return 0;
+			std::string message = "You do not have data.zip at ";
+			message += output;
+			message += "!\n\nGrab it from your purchased copy of the game,"
+					   "\nor get it from the free Make and Play Edition.";
+			SDL_ShowSimpleMessageBox(
+				SDL_MESSAGEBOX_ERROR,
+				"data.zip missing!",
+				message.c_str(),
+				NULL);
+			return 0;
 #ifndef __APPLE__
-                }
+		}
 #endif
-        }
+	}
 
-        pre_fakepercent.store(45);
+	pre_fakepercent.store(45);
 
 	SDL_snprintf(output, sizeof(output), "%s%s", PHYSFS_getBaseDir(), "gamecontrollerdb.txt");
-	if (SDL_GameControllerAddMappingsFromFile(output) < 0)
-	{
+	if(SDL_GameControllerAddMappingsFromFile(output) < 0) {
 		printf("gamecontrollerdb.txt not found!\n");
 	}
 
@@ -303,37 +288,37 @@ void FILESYSTEM_deinit()
 	PHYSFS_deinit();
 }
 
-char *FILESYSTEM_getUserSaveDirectory()
+char* FILESYSTEM_getUserSaveDirectory()
 {
 	return saveDir;
 }
 
-char *FILESYSTEM_getUserLevelDirectory()
+char* FILESYSTEM_getUserLevelDirectory()
 {
 	return levelDir;
 }
 
-bool FILESYSTEM_directoryExists(const char *fname)
+bool FILESYSTEM_directoryExists(const char* fname)
 {
-    return PHYSFS_exists(fname);
+	return PHYSFS_exists(fname);
 }
 
 const char pathSeparator =
 #ifdef _WIN32
-                            '\\';
+	'\\';
 #else
-                            '/';
+	'/';
 #endif
 
-void FILESYSTEM_mount(const char *fname)
+void FILESYSTEM_mount(const char* fname)
 {
-    std::string path(PHYSFS_getRealDir(fname));
-    path += pathSeparator;
-    path += fname;
-    if (!PHYSFS_mount(path.c_str(), NULL, 0)) {
-        printf("Error mounting: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else
-        graphics.assetdir = path.c_str();
+	std::string path(PHYSFS_getRealDir(fname));
+	path += pathSeparator;
+	path += fname;
+	if(!PHYSFS_mount(path.c_str(), NULL, 0)) {
+		printf("Error mounting: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+	} else
+		graphics.assetdir = path.c_str();
 }
 
 bool FILESYSTEM_assetsmounted = false;
@@ -342,35 +327,35 @@ void FILESYSTEM_mountassets(const char* path)
 {
 	const std::string _path(path);
 
-	std::string zippath = "levels/" + _path.substr(7,_path.size()-14) + ".data.zip";
-	std::string dirpath = "levels/" + _path.substr(7,_path.size()-14) + "/";
+	std::string zippath = "levels/" + _path.substr(7, _path.size() - 14) + ".data.zip";
+	std::string dirpath = "levels/" + _path.substr(7, _path.size() - 14) + "/";
 	std::string zip_path;
 	const char* cstr = PHYSFS_getRealDir(_path.c_str());
 
-	if (cstr) {
+	if(cstr) {
 		zip_path = cstr;
 	}
 
-	if (cstr && FILESYSTEM_directoryExists(zippath.c_str())) {
+	if(cstr && FILESYSTEM_directoryExists(zippath.c_str())) {
 		printf("Custom asset directory exists at %s\n", zippath.c_str());
 		FILESYSTEM_mount(zippath.c_str());
 		graphics.reloadresources();
 		FILESYSTEM_assetsmounted = true;
-	} else if (zip_path != "data.zip" && !endsWith(zip_path, "/data.zip") && endsWith(zip_path, ".zip")) {
+	} else if(zip_path != "data.zip" && !endsWith(zip_path, "/data.zip") && endsWith(zip_path, ".zip")) {
 		printf("Custom asset directory is .zip at %s\n", zip_path.c_str());
 		PHYSFS_File* zip = PHYSFS_openRead(zip_path.c_str());
 		zip_path += ".data.zip";
-		if (zip == NULL) {
+		if(zip == NULL) {
 			printf("error loading .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-		} else if (PHYSFS_mountHandle(zip, zip_path.c_str(), "/", 0) == 0) {
+		} else if(PHYSFS_mountHandle(zip, zip_path.c_str(), "/", 0) == 0) {
 			printf("error mounting .zip: %s\n", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 		} else {
 			graphics.assetdir = zip_path;
 		}
 		FILESYSTEM_assetsmounted = true;
 		graphics.reloadresources();
-	} else if (FILESYSTEM_directoryExists(dirpath.c_str())) {
-		printf("Custom asset directory exists at %s\n",dirpath.c_str());
+	} else if(FILESYSTEM_directoryExists(dirpath.c_str())) {
+		printf("Custom asset directory exists at %s\n", dirpath.c_str());
 		FILESYSTEM_mount(dirpath.c_str());
 		graphics.reloadresources();
 		FILESYSTEM_assetsmounted = true;
@@ -382,85 +367,76 @@ void FILESYSTEM_mountassets(const char* path)
 
 void FILESYSTEM_unmountassets()
 {
-	if (graphics.assetdir != "")
-	{
+	if(graphics.assetdir != "") {
 		printf("Unmounting %s\n", graphics.assetdir.c_str());
 		PHYSFS_unmount(graphics.assetdir.c_str());
 		graphics.assetdir = "";
 		graphics.reloadresources();
-	}
-	else
-	{
+	} else {
 		printf("Cannot unmount when no asset directory is mounted\n");
 	}
 	FILESYSTEM_assetsmounted = false;
 }
 
-bool FILESYSTEM_loadFileToMemory(const char *name, unsigned char **mem,
-                                 size_t *len, bool addnull)
+bool FILESYSTEM_loadFileToMemory(const char* name, unsigned char** mem,
+								 size_t* len, bool addnull)
 {
-        if (strcmp(name, "levels/special/stdin.vvvvvv") == 0) {
-            // this isn't *technically* necessary when piping directly from a file, but checking for that is annoying
-            static std::vector<char> STDIN_BUFFER;
-            static bool STDIN_LOADED = false;
-            if (!STDIN_LOADED) {
-                std::istreambuf_iterator<char> begin(std::cin), end;
-                STDIN_BUFFER.assign(begin, end);
-                STDIN_BUFFER.push_back(0); // there's no observable change in behavior if addnull is always true, but not vice versa
-                STDIN_LOADED = true;
-            }
+	if(strcmp(name, "levels/special/stdin.vvvvvv") == 0) {
+		// this isn't *technically* necessary when piping directly from a file, but checking for that is annoying
+		static std::vector<char> STDIN_BUFFER;
+		static bool STDIN_LOADED = false;
+		if(!STDIN_LOADED) {
+			std::istreambuf_iterator<char> begin(std::cin), end;
+			STDIN_BUFFER.assign(begin, end);
+			STDIN_BUFFER.push_back(0); // there's no observable change in behavior if addnull is always true, but not vice versa
+			STDIN_LOADED = true;
+		}
 
-            auto length = STDIN_BUFFER.size() - 1;
-            if (len != NULL) {
-                *len = length;
-            }
+		auto length = STDIN_BUFFER.size() - 1;
+		if(len != NULL) {
+			*len = length;
+		}
 
-            ++length;
-            *mem = static_cast<unsigned char*>(malloc(length)); // STDIN_BUFFER.data() causes double-free
-            std::copy(STDIN_BUFFER.begin(), STDIN_BUFFER.end(), reinterpret_cast<char*>(*mem));
-            return true;
-        }
+		++length;
+		*mem = static_cast<unsigned char*>(malloc(length)); // STDIN_BUFFER.data() causes double-free
+		std::copy(STDIN_BUFFER.begin(), STDIN_BUFFER.end(), reinterpret_cast<char*>(*mem));
+		return true;
+	}
 
-	PHYSFS_File *handle = PHYSFS_openRead(name);
-	if (handle == NULL)
-	{
+	PHYSFS_File* handle = PHYSFS_openRead(name);
+	if(handle == NULL) {
 		return false;
 	}
 	PHYSFS_uint32 length = PHYSFS_fileLength(handle);
-	if (len != NULL)
-	{
+	if(len != NULL) {
 		*len = length;
 	}
-	if (addnull)
-	{
-		*mem = (unsigned char *) malloc(length + 1);
+	if(addnull) {
+		*mem = (unsigned char*) malloc(length + 1);
 		(*mem)[length] = 0;
-	}
-	else
-	{
+	} else {
 		*mem = (unsigned char*) malloc(length);
 	}
-	if (PHYSFS_readBytes(handle, *mem, length) == -1) {
-            FILESYSTEM_freeMemory(mem);
-        }
+	if(PHYSFS_readBytes(handle, *mem, length) == -1) {
+		FILESYSTEM_freeMemory(mem);
+	}
 	PHYSFS_close(handle);
-    return true;
+	return true;
 }
 
-void FILESYSTEM_freeMemory(unsigned char **mem)
+void FILESYSTEM_freeMemory(unsigned char** mem)
 {
 	free(*mem);
 	*mem = NULL;
 }
 
-bool FILESYSTEM_saveTiXml2Document(const char *name, tinyxml2::XMLDocument& doc)
+bool FILESYSTEM_saveTiXml2Document(const char* name, tinyxml2::XMLDocument& doc)
 {
 	/* XMLDocument.SaveFile doesn't account for Unicode paths, PHYSFS does */
 	tinyxml2::XMLPrinter printer;
 	doc.Print(&printer);
 	PHYSFS_File* handle = PHYSFS_openWrite(name);
-	if (handle == NULL)
-	{
+	if(handle == NULL) {
 		return false;
 	}
 	PHYSFS_writeBytes(handle, printer.CStr(), printer.CStrSize() - 1); // subtract one because CStrSize includes terminating null
@@ -468,13 +444,12 @@ bool FILESYSTEM_saveTiXml2Document(const char *name, tinyxml2::XMLDocument& doc)
 	return true;
 }
 
-bool FILESYSTEM_loadTiXml2Document(const char *name, tinyxml2::XMLDocument& doc)
+bool FILESYSTEM_loadTiXml2Document(const char* name, tinyxml2::XMLDocument& doc)
 {
 	/* XMLDocument.LoadFile doesn't account for Unicode paths, PHYSFS does */
-	unsigned char *mem = NULL;
+	unsigned char* mem = NULL;
 	FILESYSTEM_loadFileToMemory(name, &mem, NULL, true);
-	if (mem == NULL)
-	{
+	if(mem == NULL) {
 		return false;
 	}
 	doc.Parse((const char*) mem);
@@ -485,14 +460,12 @@ bool FILESYSTEM_loadTiXml2Document(const char *name, tinyxml2::XMLDocument& doc)
 std::vector<std::string> FILESYSTEM_getLevelDirFileNames()
 {
 	std::vector<std::string> list;
-	char **fileList = PHYSFS_enumerateFiles("/levels");
-	char **i;
+	char** fileList = PHYSFS_enumerateFiles("/levels");
+	char** i;
 	std::string builtLocation;
 
-	for (i = fileList; *i != NULL; i++)
-	{
-		if (strcmp(*i, "data") == 0)
-		{
+	for(i = fileList; *i != NULL; i++) {
+		if(strcmp(*i, "data") == 0) {
 			continue; /* FIXME: lolwut -flibit */
 		}
 		builtLocation = "levels/";
@@ -508,13 +481,11 @@ std::vector<std::string> FILESYSTEM_getLevelDirFileNames()
 std::vector<std::string> FILESYSTEM_getGraphicsDirFileNames()
 {
 	std::vector<std::string> list;
-	char **fileList = PHYSFS_enumerateFiles("/graphics");
+	char** fileList = PHYSFS_enumerateFiles("/graphics");
 	std::string builtLocation;
 
-	for (char **i = fileList; *i != NULL; i++)
-	{
-		if (strcmp(*i, "data") == 0)
-		{
+	for(char** i = fileList; *i != NULL; i++) {
+		if(strcmp(*i, "data") == 0) {
 			continue;
 		}
 		builtLocation = "graphics/";
@@ -537,8 +508,8 @@ void PLATFORM_getOSDirectory(char* output)
 #elif defined(__SWITCH__)
 	bsd_strlcpy(output, "sdmc:/switch/VVVVVV/", MAX_PATH);
 #elif defined(__ANDROID__)
-        bsd_strlcpy(output, SDL_AndroidGetExternalStoragePath(), MAX_PATH - 1);
-        strcat(output, "/");
+	bsd_strlcpy(output, SDL_AndroidGetExternalStoragePath(), MAX_PATH - 1);
+	strcat(output, "/");
 #else
 	bsd_strlcpy(output, PHYSFS_getPrefDir("distractionware", "VVVVVV"), MAX_PATH);
 #endif
@@ -553,53 +524,49 @@ void PLATFORM_migrateSaveData(char* output)
 #endif
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__) || defined(__DragonFly__)
-	DIR *dir = NULL;
-	struct dirent *de = NULL;
-	DIR *subDir = NULL;
-	struct dirent *subDe = NULL;
+	DIR* dir = NULL;
+	struct dirent* de = NULL;
+	DIR* subDir = NULL;
+	struct dirent* subDe = NULL;
 	char subDirLocation[MAX_PATH];
-	const char *homeDir = getenv("HOME");
-	if (homeDir == NULL)
-	{
+	const char* homeDir = getenv("HOME");
+	if(homeDir == NULL) {
 		/* Uhh, I don't want to get near this. -flibit */
 		return;
 	}
 	strcpy_safe(oldDirectory, homeDir);
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__) || defined(__DragonFly__)
+	#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__) || defined(__DragonFly__)
 	strcat(oldDirectory, "/.vvvvvv/");
-#elif defined(__APPLE__)
+	#elif defined(__APPLE__)
 	strcat(oldDirectory, "/Documents/VVVVVV/");
-#endif
+	#endif
 	dir = opendir(oldDirectory);
-	if (!dir)
-	{
+	if(!dir) {
 		printf("Could not find directory %s\n", oldDirectory);
 		return;
 	}
 
 	printf("Migrating old savedata to new location...\n");
-	for (de = readdir(dir); de != NULL; de = readdir(dir))
-	{
-		if (	strcmp(de->d_name, "..") == 0 ||
-			strcmp(de->d_name, ".") == 0	)
-		{
+	for(de = readdir(dir); de != NULL; de = readdir(dir)) {
+		if(strcmp(de->d_name, "..") == 0 ||
+		   strcmp(de->d_name, ".") == 0) {
 			continue;
 		}
-		#define COPY_SAVEFILE(name) \
-			else if (strcmp(de->d_name, name) == 0) \
-			{ \
-				strcpy_safe(oldLocation, oldDirectory); \
-				strcat(oldLocation, name); \
-				strcpy_safe(newLocation, output); \
-				strcat(newLocation, "saves/"); \
-				strcat(newLocation, name); \
-				PLATFORM_copyFile(oldLocation, newLocation); \
-			}
+	#define COPY_SAVEFILE(name)                          \
+		else if(strcmp(de->d_name, name) == 0)           \
+		{                                                \
+			strcpy_safe(oldLocation, oldDirectory);      \
+			strcat(oldLocation, name);                   \
+			strcpy_safe(newLocation, output);            \
+			strcat(newLocation, "saves/");               \
+			strcat(newLocation, name);                   \
+			PLATFORM_copyFile(oldLocation, newLocation); \
+		}
 		COPY_SAVEFILE("unlock.vvv")
 		COPY_SAVEFILE("tsave.vvv")
 		COPY_SAVEFILE("qsave.vvv")
-		#undef COPY_SAVEFILE
-		else if (strstr(de->d_name, ".vvvvvv.vvv") != NULL)
+	#undef COPY_SAVEFILE
+		else if(strstr(de->d_name, ".vvvvvv.vvv") != NULL)
 		{
 			strcpy_safe(oldLocation, oldDirectory);
 			strcat(oldLocation, de->d_name);
@@ -608,7 +575,7 @@ void PLATFORM_migrateSaveData(char* output)
 			strcat(newLocation, de->d_name);
 			PLATFORM_copyFile(oldLocation, newLocation);
 		}
-		else if (strstr(de->d_name, ".vvvvvv") != NULL)
+		else if(strstr(de->d_name, ".vvvvvv") != NULL)
 		{
 			strcpy_safe(oldLocation, oldDirectory);
 			strcat(oldLocation, de->d_name);
@@ -617,35 +584,32 @@ void PLATFORM_migrateSaveData(char* output)
 			strcat(newLocation, de->d_name);
 			PLATFORM_copyFile(oldLocation, newLocation);
 		}
-		else if (strcmp(de->d_name, "Saves") == 0)
+		else if(strcmp(de->d_name, "Saves") == 0)
 		{
 			strcpy_safe(subDirLocation, oldDirectory);
 			strcat(subDirLocation, "Saves/");
 			subDir = opendir(subDirLocation);
-			if (!subDir)
-			{
+			if(!subDir) {
 				printf("Could not open Saves/ subdir!\n");
 				continue;
 			}
-			for (
+			for(
 				subDe = readdir(subDir);
 				subDe != NULL;
-				subDe = readdir(subDir)
-			) {
-				#define COPY_SAVEFILE(name) \
-					(strcmp(subDe->d_name, name) == 0) \
-					{ \
-						strcpy_safe(oldLocation, subDirLocation); \
-						strcat(oldLocation, name); \
-						strcpy_safe(newLocation, output); \
-						strcat(newLocation, "saves/"); \
-						strcat(newLocation, name); \
-						PLATFORM_copyFile(oldLocation, newLocation); \
-					}
+				subDe = readdir(subDir)) {
+	#define COPY_SAVEFILE(name)                          \
+		(strcmp(subDe->d_name, name) == 0)               \
+		{                                                \
+			strcpy_safe(oldLocation, subDirLocation);    \
+			strcat(oldLocation, name);                   \
+			strcpy_safe(newLocation, output);            \
+			strcat(newLocation, "saves/");               \
+			strcat(newLocation, name);                   \
+			PLATFORM_copyFile(oldLocation, newLocation); \
+		}
 				if COPY_SAVEFILE("unlock.vvv")
-				else if COPY_SAVEFILE("tsave.vvv")
-				else if COPY_SAVEFILE("qsave.vvv")
-				#undef COPY_SAVEFILE
+					else if COPY_SAVEFILE("tsave.vvv") else if COPY_SAVEFILE("qsave.vvv")
+	#undef COPY_SAVEFILE
 			}
 		}
 	}
@@ -689,38 +653,34 @@ void PLATFORM_migrateSaveData(char* output)
 
 	sprintf(fileSearch, "%s\\*.vvvvvv", oldDirectory);
 	hFind = FindFirstFile(fileSearch, &findHandle);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
+	if(hFind == INVALID_HANDLE_VALUE) {
 		printf("Could not find directory %s\n", oldDirectory);
-	}
-	else do
-	{
-		if ((findHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
-		{
-			strcpy_safe(oldLocation, oldDirectory);
-			strcat(oldLocation, findHandle.cFileName);
-			strcpy_safe(newLocation, output);
-			strcat(newLocation, "levels\\");
-			strcat(newLocation, findHandle.cFileName);
-			PLATFORM_copyFile(oldLocation, newLocation);
-		}
-	} while (FindNextFile(hFind, &findHandle));
+	} else
+		do {
+			if((findHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+				strcpy_safe(oldLocation, oldDirectory);
+				strcat(oldLocation, findHandle.cFileName);
+				strcpy_safe(newLocation, output);
+				strcat(newLocation, "levels\\");
+				strcat(newLocation, findHandle.cFileName);
+				PLATFORM_copyFile(oldLocation, newLocation);
+			}
+		} while(FindNextFile(hFind, &findHandle));
 #elif defined(__SWITCH__) || defined(__EMSCRIPTEN__)
 	/* No Migration needed. */
 #else
-#error See PLATFORM_migrateSaveData
+	#error See PLATFORM_migrateSaveData
 #endif
 }
 
-void PLATFORM_copyFile(const char *oldLocation, const char *newLocation)
+void PLATFORM_copyFile(const char* oldLocation, const char* newLocation)
 {
-	char *data;
+	char* data;
 	long int length;
 
 	/* Read data */
-	FILE *file = fopen(oldLocation, "rb");
-	if (!file)
-	{
+	FILE* file = fopen(oldLocation, "rb");
+	if(!file) {
 		printf("Cannot open/copy %s\n", oldLocation);
 		return;
 	}
@@ -728,16 +688,15 @@ void PLATFORM_copyFile(const char *oldLocation, const char *newLocation)
 	length = ftell(file);
 	fseek(file, 0, SEEK_SET);
 	data = (char*) malloc(length);
-	if (fread(data, 1, length, file) <= 0) {
-            printf("it broke!!!\n");
-            exit(1);
-        }
+	if(fread(data, 1, length, file) <= 0) {
+		printf("it broke!!!\n");
+		exit(1);
+	}
 	fclose(file);
 
 	/* Write data */
 	file = fopen(newLocation, "wb");
-	if (!file)
-	{
+	if(!file) {
 		printf("Could not write to %s\n", newLocation);
 		free(data);
 		return;
@@ -764,51 +723,54 @@ bool FILESYSTEM_openDirectoryEnabled()
 }
 
 #ifdef _WIN32
-#include <shellapi.h>
-bool FILESYSTEM_openDirectory(const char *dname) {
-    ShellExecute(NULL, "open", dname, NULL, NULL, SW_SHOWMINIMIZED);
-    return true;
+	#include <shellapi.h>
+bool FILESYSTEM_openDirectory(const char* dname)
+{
+	ShellExecute(NULL, "open", dname, NULL, NULL, SW_SHOWMINIMIZED);
+	return true;
 }
 #elif defined(__SWITCH__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
-bool FILESYSTEM_openDirectory(const char *dname) {
-    return false;
+bool FILESYSTEM_openDirectory(const char* dname)
+{
+	return false;
 }
 #else
-#if defined(__APPLE__) || defined(__HAIKU__)
+	#if defined(__APPLE__) || defined(__HAIKU__)
 const char* open_cmd = "open";
-#else
+	#else
 const char* open_cmd = "xdg-open";
-#endif
+	#endif
 
 extern "C" char** environ;
 
-bool FILESYSTEM_openDirectory(const char *dname) {
-    pid_t child;
-    // This const_cast is legal (ctrl-f "The statement" at https://pubs.opengroup.org/onlinepubs/9699919799/functions/exec.html)
-    char* argv[3] = {const_cast<char*>(open_cmd), const_cast<char*>(dname), nullptr};
-    posix_spawnp(
-            &child, // pid
-            open_cmd, // file
-            nullptr, // file_actions
-            nullptr, // attrp
-            argv, // argv
-            environ // envp
-    );
-    int status = 0;
-    waitpid(child, &status, 0);
-    return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+bool FILESYSTEM_openDirectory(const char* dname)
+{
+	pid_t child;
+	// This const_cast is legal (ctrl-f "The statement" at https://pubs.opengroup.org/onlinepubs/9699919799/functions/exec.html)
+	char* argv[3] = {const_cast<char*>(open_cmd), const_cast<char*>(dname), nullptr};
+	posix_spawnp(
+		&child,   // pid
+		open_cmd, // file
+		nullptr,  // file_actions
+		nullptr,  // attrp
+		argv,     // argv
+		environ   // envp
+	);
+	int status = 0;
+	waitpid(child, &status, 0);
+	return WIFEXITED(status) && WEXITSTATUS(status) == 0;
 }
 #endif
 
-bool FILESYSTEM_delete(const char *name)
+bool FILESYSTEM_delete(const char* name)
 {
-    return PHYSFS_delete(name) != 0;
+	return PHYSFS_delete(name) != 0;
 }
 
-void FILESYSTEM_flushSave() {
+void FILESYSTEM_flushSave()
+{
 #ifdef __EMSCRIPTEN__
-    EM_ASM(
-	FS.syncfs(false, function() {});
-    );
+	EM_ASM(
+		FS.syncfs(false, function(){}););
 #endif
 }

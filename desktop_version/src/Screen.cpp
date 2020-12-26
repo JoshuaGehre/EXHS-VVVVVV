@@ -1,12 +1,12 @@
 #include "Screen.h"
 
 #include "FileSystemUtils.h"
-#include "GraphicsUtil.h"
 #include "GraphicsResources.h"
+#include "GraphicsUtil.h"
 
-#include <stdlib.h>
 #include <cstring>
 #include <physfs.h>
+#include <stdlib.h>
 
 void Screen::init()
 {
@@ -31,8 +31,7 @@ void Screen::init()
 		1080,
 		SDL_WINDOW_FULLSCREEN_DESKTOP,
 		&m_window,
-		&m_renderer
-	);
+		&m_renderer);
 #else
 	// Uncomment this next line when you need to debug -flibit
 	// SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "software", SDL_HINT_OVERRIDE);
@@ -42,14 +41,13 @@ void Screen::init()
 		480,
 		SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE,
 		&m_window,
-		&m_renderer
-	);
+		&m_renderer);
 	SDL_SetWindowTitle(m_window, "VVVVVV: Community Edition");
-#ifndef __EMSCRIPTEN__
-	SDL_Surface *icon = LoadImage("VVVVVV.png");
+	#ifndef __EMSCRIPTEN__
+	SDL_Surface* icon = LoadImage("VVVVVV.png");
 	SDL_SetWindowIcon(m_window, icon);
 	SDL_FreeSurface(icon);
-#endif
+	#endif
 #endif
 
 	// FIXME: This surface should be the actual backbuffer! -flibit
@@ -61,16 +59,14 @@ void Screen::init()
 		0x00FF0000,
 		0x0000FF00,
 		0x000000FF,
-		0xFF000000
-	);
+		0xFF000000);
 	// ALSO FIXME: This SDL_CreateTexture() is duplicated in Graphics::processVsync()!
 	m_screenTexture = SDL_CreateTexture(
 		m_renderer,
 		SDL_PIXELFORMAT_ARGB8888,
 		SDL_TEXTUREACCESS_STREAMING,
 		320,
-		240
-	);
+		240);
 
 	badSignalEffect = false;
 
@@ -81,64 +77,51 @@ void Screen::init()
 
 void Screen::ResizeScreen(int x, int y)
 {
-	if (!initialized) return;
+	if(!initialized) return;
 #if !defined(__SWITCH__)
 	int resX = 320;
 	int resY = 240;
-	if (x != -1 && y != -1)
-	{
+	if(x != -1 && y != -1) {
 		// This is a user resize!
 		resX = x;
 		resY = y;
 	}
 
-	if(!isWindowed)
-	{
+	if(!isWindowed) {
 		int result = SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-		if (result != 0)
-		{
+		if(result != 0) {
 			printf("Error: could not set the game to fullscreen mode: %s\n", SDL_GetError());
 			return;
 		}
-	}
-	else
-	{
+	} else {
 		int result = SDL_SetWindowFullscreen(m_window, 0);
-		if (result != 0)
-		{
+		if(result != 0) {
 			printf("Error: could not set the game to windowed mode: %s\n", SDL_GetError());
 			return;
 		}
-		if (x != -1 && y != -1)
-		{
+		if(x != -1 && y != -1) {
 			SDL_SetWindowSize(m_window, resX, resY);
 			SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		}
 	}
 #endif
-	if (stretchMode == 1)
-	{
+	if(stretchMode == 1) {
 		int winX, winY;
 		SDL_GetWindowSize(m_window, &winX, &winY);
 		int result = SDL_RenderSetLogicalSize(m_renderer, winX, winY);
-		if (result != 0)
-		{
+		if(result != 0) {
 			printf("Error: could not set logical size: %s\n", SDL_GetError());
 			return;
 		}
 		result = SDL_RenderSetIntegerScale(m_renderer, SDL_FALSE);
-		if (result != 0)
-		{
+		if(result != 0) {
 			printf("Error: could not set scale: %s\n", SDL_GetError());
 			return;
 		}
-	}
-	else
-	{
+	} else {
 		SDL_RenderSetLogicalSize(m_renderer, 320, 240);
-		int result = SDL_RenderSetIntegerScale(m_renderer, (SDL_bool) (stretchMode == 2));
-		if (result != 0)
-		{
+		int result = SDL_RenderSetIntegerScale(m_renderer, (SDL_bool)(stretchMode == 2));
+		if(result != 0) {
 			printf("Error: could not set scale: %s\n", SDL_GetError());
 			return;
 		}
@@ -155,15 +138,12 @@ void Screen::ResizeToNearestMultiple()
 	bool using_width;
 	int usethisdimension, usethisratio;
 
-	if ((float) w / (float) h > 4.0 / 3.0)
-	{
+	if((float) w / (float) h > 4.0 / 3.0) {
 		// Width is bigger, so it's limited by height
 		usethisdimension = h;
 		usethisratio = 240;
 		using_width = false;
-	}
-	else
-	{
+	} else {
 		// Height is bigger, so it's limited by width. Or we're exactly 4:3 already
 		usethisdimension = w;
 		usethisratio = 320;
@@ -175,30 +155,23 @@ void Screen::ResizeToNearestMultiple()
 
 	int final_dimension;
 
-	if (usethisdimension - floor < ceiling - usethisdimension)
-	{
+	if(usethisdimension - floor < ceiling - usethisdimension) {
 		// Floor is nearest
 		final_dimension = floor;
-	}
-	else
-	{
+	} else {
 		// Ceiling is nearest. Or we're exactly on a multiple already
 		final_dimension = ceiling;
 	}
 
-	if (final_dimension == 0)
-	{
+	if(final_dimension == 0) {
 		// We're way too small!
 		ResizeScreen(320, 240);
 		return;
 	}
 
-	if (using_width)
-	{
+	if(using_width) {
 		ResizeScreen(final_dimension, final_dimension / 4 * 3);
-	}
-	else
-	{
+	} else {
 		ResizeScreen(final_dimension * 4 / 3, final_dimension);
 	}
 }
@@ -208,39 +181,30 @@ void Screen::GetWindowSize(int* x, int* y)
 	SDL_GetWindowSize(m_window, x, y);
 }
 
-void Screen::UpdateScreen(SDL_Surface* buffer, SDL_Rect* rect )
+void Screen::UpdateScreen(SDL_Surface* buffer, SDL_Rect* rect)
 {
-	if((buffer == NULL) && (m_screen == NULL) )
-	{
+	if((buffer == NULL) && (m_screen == NULL)) {
 		return;
 	}
 
-	if(badSignalEffect)
-	{
+	if(badSignalEffect) {
 		buffer = ApplyFilter(buffer);
 	}
 
-	if(game.cutemode)
-	{
+	if(game.cutemode) {
 		buffer = ApplyCuteFilter(buffer);
-	}
-	else if(game.allymode)
-	{
+	} else if(game.allymode) {
 		buffer = ApplyAllyFilter(buffer);
-	}
-	else if(game.misamode)
-	{
+	} else if(game.misamode) {
 		buffer = ApplyMisaFilter(buffer);
 	}
 
 	FillRect(m_screen, 0x000);
-	BlitSurfaceStandard(buffer,NULL,m_screen,rect);
+	BlitSurfaceStandard(buffer, NULL, m_screen, rect);
 
-	if(badSignalEffect)
-	{
+	if(badSignalEffect) {
 		SDL_FreeSurface(buffer);
 	}
-
 }
 
 const SDL_PixelFormat* Screen::GetFormat()
@@ -254,14 +218,12 @@ void Screen::FlipScreen()
 		m_screenTexture,
 		NULL,
 		m_screen->pixels,
-		m_screen->pitch
-	);
+		m_screen->pitch);
 	SDL_RenderCopy(
 		m_renderer,
 		m_screenTexture,
 		isFiltered ? &filterSubrect : NULL,
-		NULL
-	);
+		NULL);
 	SDL_RenderPresent(m_renderer);
 #ifndef __EMSCRIPTEN__
 	SDL_RenderClear(m_renderer);
@@ -291,8 +253,7 @@ void Screen::toggleLinearFilter()
 		SDL_PIXELFORMAT_ARGB8888,
 		SDL_TEXTUREACCESS_STREAMING,
 		320,
-		240
-	);
+		240);
 }
 
 void Screen::resetRendererWorkaround()
@@ -300,8 +261,7 @@ void Screen::resetRendererWorkaround()
 	SDL_SetHintWithPriority(
 		SDL_HINT_RENDER_VSYNC,
 		vsync ? "1" : "0",
-		SDL_HINT_OVERRIDE
-	);
+		SDL_HINT_OVERRIDE);
 
 	/* FIXME: This exists because SDL_HINT_RENDER_VSYNC is not dynamic!
 	 * As a result, our only workaround is to tear down the renderer
@@ -309,8 +269,7 @@ void Screen::resetRendererWorkaround()
 	 * -flibit
 	 */
 
-	if (m_renderer == NULL)
-	{
+	if(m_renderer == NULL) {
 		/* We haven't made it to init yet, don't worry about it */
 		return;
 	}
@@ -318,8 +277,7 @@ void Screen::resetRendererWorkaround()
 	SDL_RendererInfo renderInfo;
 	SDL_GetRendererInfo(m_renderer, &renderInfo);
 	bool curVsync = (renderInfo.flags & SDL_RENDERER_PRESENTVSYNC) != 0;
-	if (vsync == curVsync)
-	{
+	if(vsync == curVsync) {
 		return;
 	}
 
@@ -332,8 +290,7 @@ void Screen::resetRendererWorkaround()
 		SDL_PIXELFORMAT_ARGB8888,
 		SDL_TEXTUREACCESS_STREAMING,
 		320,
-		240
-	);
+		240);
 
 	/* Ugh, have to make sure to re-apply graphics options after doing the
 	 * above, otherwise letterbox/integer won't be applied...

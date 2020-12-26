@@ -1,12 +1,12 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "Graphics.h"
-#include "UtilityClass.h"
-#include "Maths.h"
 #include "Entity.h"
+#include "Graphics.h"
 #include "Map.h"
+#include "Maths.h"
 #include "Script.h"
+#include "UtilityClass.h"
 
 void titlerender();
 
