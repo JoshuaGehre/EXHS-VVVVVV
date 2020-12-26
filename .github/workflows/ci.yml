@@ -10,6 +10,9 @@ jobs:
   build-lin:
     name: Build (Ubuntu 18.04)
 
+	only:
+		- web
+
     runs-on: ubuntu-18.04
 
     env:
@@ -68,6 +71,8 @@ jobs:
   build-mac:
     name: Build (macOS)
 
+	only:
+		- web
     runs-on: macos-latest
 
     env:
@@ -141,6 +146,9 @@ jobs:
   build-win:
     name: Build (Ubuntu + MinGW64)
 
+	only:
+		- web
+
     runs-on: ubuntu-latest
 
     steps:
@@ -187,6 +195,9 @@ jobs:
 
   build-switch:
     name: Build (Switch)
+
+	only:
+		- web
 
     runs-on: ubuntu-18.04
     container: leo60228/vvvvvv-ce-switch:2020-03-27
