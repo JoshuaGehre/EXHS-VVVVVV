@@ -3114,6 +3114,7 @@ void Graphics::setcolreal(long long t)
 		ct.nocolor = true;
 	} else {
 		ct.colour = t;
+		ct.nocolor = false;
 	}
 }
 
